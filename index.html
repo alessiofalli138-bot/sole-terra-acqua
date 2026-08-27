@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#375b46">
+  <meta name="description" content="Sole Terra Acqua — cassette di verdura locale composte da te e consegnate a casa.">
+  <title>Sole Terra Acqua | Azienda agricola</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Sole Terra Acqua">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <button class="menu-button" id="menuButton" aria-label="Apri il menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <a class="brand" href="#home" data-view-link="home" aria-label="Sole Terra Acqua, torna alla home">
+        <span class="brand-logo-crop" aria-hidden="true">
+          <img src="assets/logo-sole-terra-acqua.png" alt="">
+        </span>
+        <span>
+          <strong>SOLE TERRA ACQUA</strong>
+          <small>AZIENDA AGRICOLA</small>
+        </span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Navigazione principale">
+        <a href="#home" data-view-link="home">HOME</a>
+        <a href="#storia" data-home-anchor="storia">CHI SIAMO</a>
+        <a href="#componi" data-view-link="builder">COMPONI LA CASSETTA</a>
+        <a href="#contatti" data-home-anchor="contatti">CONTATTI</a>
+      </nav>
+
+      <button class="header-cart" id="headerCart" aria-label="Apri la tua cassetta">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 8h16l-1.3 11H5.3L4 8Zm4 0V6a4 4 0 0 1 8 0v2"/>
+        </svg>
+        <span id="headerCartCount">0</span>
+      </button>
+    </header>
+
+    <aside class="side-menu" id="sideMenu" aria-hidden="true">
+      <div class="side-menu-head">
+        <span>MENU</span>
+        <button id="closeMenu" aria-label="Chiudi il menu">×</button>
+      </div>
+      <nav>
+        <a href="#home" data-view-link="home"><span>01</span> Home</a>
+        <a href="#storia" data-home-anchor="storia"><span>02</span> Chi siamo</a>
+        <a href="#componi" data-view-link="builder"><span>03</span> Componi la cassetta</a>
+        <a href="#contatti" data-home-anchor="contatti"><span>04</span> Contatti</a>
+      </nav>
+      <div class="menu-note">
+        <span class="status-dot"></span>
+        RACCOLTO QUESTA MATTINA
+      </div>
+    </aside>
+    <div class="menu-backdrop" id="menuBackdrop"></div>
+
+    <main>
+      <section class="view active" id="homeView" data-view="home">
+        <div class="hero">
+          <img src="assets/hero-campo.png" alt="Cassetta di ortaggi freschi davanti a un campo coltivato">
+          <div class="hero-shade"></div>
+          <div class="hero-content">
+            <p class="eyebrow light">DAL NOSTRO CAMPO · A CASA TUA</p>
+            <h1>LA TUA SPESA<br><em>HA RADICI.</em></h1>
+            <p>Verdure di stagione raccolte vicino a te, nella cassetta che componi tu.</p>
+            <button class="primary-button hero-button" data-start-builder>
+              COMPONI LA TUA CASSETTA
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+          <div class="hero-proof">
+            <strong>KM 0</strong>
+            <span>RACCOLTO<br>SETTIMANALE</span>
+          </div>
+        </div>
+
+        <section class="trust-strip" aria-label="I nostri valori">
+          <div><span>01</span><p><strong>FRESCO DAVVERO</strong><small>Raccolto in giornata</small></p></div>
+          <div><span>02</span><p><strong>ZERO SPRECHI</strong><small>Scegli solo ciò che ami</small></p></div>
+          <div><span>03</span><p><strong>FILIERA CORTA</strong><small>Direttamente dal campo</small></p></div>
+        </section>
+
+        <section class="story section-wrap" id="storia">
+          <div class="story-visual reveal">
+            <div class="story-photo">
+              <img src="assets/hero-campo.png" alt="Il campo di Sole Terra Acqua al tramonto">
+            </div>
+            <div class="story-card">
+              <strong>DAL 2018</strong>
+              <span>COLTIVIAMO<br>FIDUCIA</span>
+            </div>
+          </div>
+          <div class="story-copy reveal">
+            <p class="eyebrow">LA NOSTRA STORIA</p>
+            <h2>UNA PICCOLA AZIENDA,<br>UNA GRANDE IDEA<br>DI <em>VICINANZA.</em></h2>
+            <p>
+              Sole Terra Acqua nasce nella campagna viterbese da un gesto semplice: coltivare bene e far arrivare
+              alle famiglie prodotti che sanno ancora di terra, sole e stagione.
+            </p>
+            <p>
+              Ogni settimana raccogliamo solo ciò che serve. Tu scegli cosa mettere nella cassetta,
+              noi prepariamo il tuo ordine con cura e lo consegniamo seguendo percorsi più brevi e intelligenti.
+            </p>
+            <button class="text-link" data-start-builder>SCOPRI I PRODOTTI <span>↗</span></button>
+          </div>
+        </section>
+
+        <section class="weekly section-wrap">
+          <div class="section-heading reveal">
+            <div>
+              <p class="eyebrow">DALL'ORTO, QUESTA SETTIMANA</p>
+              <h2>IL BUONO<br>DELLA STAGIONE.</h2>
+            </div>
+            <p>Dieci prodotti appena raccolti. Le disponibilità e i pesi cambiano ogni settimana, proprio come l'orto.</p>
+          </div>
+          <div class="weekly-products reveal" aria-label="Prodotti disponibili">
+            <article style="--x:0;--y:0"><div class="product-sprite"></div><span>POMODORI</span><small>500 G</small></article>
+            <article style="--x:1;--y:0"><div class="product-sprite"></div><span>ZUCCHINE</span><small>500 G</small></article>
+            <article style="--x:2;--y:0"><div class="product-sprite"></div><span>CAROTE</span><small>500 G</small></article>
+            <article style="--x:3;--y:0"><div class="product-sprite"></div><span>MELANZANE</span><small>2 PZ</small></article>
+          </div>
+          <button class="secondary-button centered" data-start-builder>VEDI TUTTI I PRODOTTI <span>→</span></button>
+        </section>
+
+        <section class="home-cta">
+          <div>
+            <p class="eyebrow light">LA TUA CASSETTA, LE TUE REGOLE</p>
+            <h2>SCEGLI. COMPONI.<br><em>RICEVI.</em></h2>
+          </div>
+          <div>
+            <p>A partire da 12 €. Consegna programmata nella fascia oraria che preferisci.</p>
+            <button class="cream-button" data-start-builder>INIZIA ORA <span>→</span></button>
+          </div>
+        </section>
+
+        <section class="contacts section-wrap" id="contatti">
+          <div>
+            <p class="eyebrow">RESTIAMO VICINI</p>
+            <h2>HAI UNA DOMANDA?<br>SCRIVICI.</h2>
+          </div>
+          <div class="contact-grid">
+            <div><small>TITOLARE</small><strong>Alessio Falli</strong></div>
+            <a href="tel:+393202732892"><small>TELEFONO</small><strong>+39 320 273 2892</strong></a>
+            <a href="mailto:agricolasoleacquaterra@gmail.com"><small>EMAIL</small><strong>agricolasoleacquaterra@gmail.com</strong></a>
+            <a href="https://www.instagram.com/agricola_soleterraacqua/" target="_blank" rel="noopener"><small>INSTAGRAM</small><strong>@agricola_soleterraacqua</strong></a>
+            <div><small>ZONA</small><strong>Viterbo e dintorni</strong></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="builderView" data-view="builder">
+        <div class="builder-header section-wrap">
+          <div>
+            <p class="eyebrow">COMPONI LA TUA CASSETTA</p>
+            <h1>METTI IN TAVOLA<br><em>CIÒ CHE AMI.</em></h1>
+          </div>
+          <div class="stepper" aria-label="Avanzamento ordine">
+            <button class="active" data-step-jump="1"><span>1</span> CASSETTA</button>
+            <i></i>
+            <button data-step-jump="2"><span>2</span> PRODOTTI</button>
+            <i></i>
+            <button data-step-jump="3"><span>3</span> CONSEGNA</button>
+            <i></i>
+            <button data-step-jump="4"><span>4</span> RIEPILOGO</button>
+          </div>
+        </div>
+
+        <div class="builder-layout section-wrap">
+          <div class="builder-main">
+            <section class="order-step active" data-step="1">
+              <div class="step-heading">
+                <span>01</span>
+                <div>
+                  <h2>SCEGLI LA DIMENSIONE</h2>
+                  <p>Ogni cassetta include una fascia di prodotti a scelta. Puoi aggiungerne altri senza limite: gli extra costano 2 € ciascuno.</p>
+                </div>
+              </div>
+              <div class="box-options" id="boxOptions">
+                <button class="box-option" data-box="piccola">
+                  <span class="recommended-tag">Piccola bontà</span>
+                  <small>CASSETTA</small>
+                  <strong>PICCOLA</strong>
+                  <div class="price"><b>12</b><sup>€</sup></div>
+                  <p>Da 3 a 5 prodotti inclusi<br>extra senza limite</p>
+                  <i aria-hidden="true">→</i>
+                </button>
+                <button class="box-option selected" data-box="media">
+                  <span class="recommended-tag">Giusta giusta</span>
+                  <small>CASSETTA</small>
+                  <strong>MEDIA</strong>
+                  <div class="old-price">15 €</div>
+                  <div class="price"><b>14</b><sup>€</sup></div>
+                  <p>Da 4 a 6 prodotti inclusi<br>extra senza limite</p>
+                  <i aria-hidden="true">→</i>
+                </button>
+                <button class="box-option" data-box="grande">
+                  <span class="recommended-tag">Bella piena</span>
+                  <small>CASSETTA</small>
+                  <strong>GRANDE</strong>
+                  <div class="old-price">19 €</div>
+                  <div class="price"><b>17</b><sup>€</sup></div>
+                  <p>Da 5 a 8 prodotti inclusi<br>extra senza limite</p>
+                  <i aria-hidden="true">→</i>
+                </button>
+              </div>
+              <div class="step-actions right">
+                <button class="primary-button" data-next-step>SCELGO I PRODOTTI <span>→</span></button>
+              </div>
+            </section>
+
+            <section class="order-step" data-step="2">
+              <div class="step-heading">
+                <span>02</span>
+                <div>
+                  <h2>RIEMPI LA TUA CASSETTA</h2>
+                  <p>Puoi scegliere più volte lo stesso prodotto. Pesi e disponibilità sono aggiornati ogni settimana.</p>
+                </div>
+              </div>
+              <div class="quota-banner">
+                <div>
+                  <small>LA TUA SCELTA</small>
+                  <strong id="quotaStatus">0 PRODOTTI SCELTI</strong>
+                </div>
+                <div class="quota-dots" id="quotaDots"></div>
+                <p id="quotaHint">Nel prezzo sono inclusi da 4 a 6 prodotti</p>
+              </div>
+              <div class="live-crate-card">
+                <div class="live-crate-heading">
+                  <div>
+                    <small>GUARDA LA TUA CASSETTA</small>
+                    <strong id="liveCrateLabel">CASSETTA MEDIA</strong>
+                  </div>
+                  <span>SI RIEMPIE MENTRE SCEGLI</span>
+                </div>
+                <div class="crate-visual size-media" id="liveCrateVisual">
+                  <div class="crate-items" id="liveCrateItems">
+                    <span class="empty-crate">LA CASSETTA È VUOTA<br>AGGIUNGI IL PRIMO PRODOTTO</span>
+                  </div>
+                  <picture class="crate-picture" aria-hidden="true">
+                    <img class="realistic-crate" src="assets/cassetta-media-nuova.png" alt="Cassetta rustica in legno inclinata verso chi guarda">
+                  </picture>
+                </div>
+              </div>
+              <div class="product-grid" id="productGrid"></div>
+              <div class="step-actions">
+                <button class="back-button" data-prev-step>← INDIETRO</button>
+                <button class="primary-button" id="toDelivery" data-next-step disabled>SCELGO LA CONSEGNA <span>→</span></button>
+              </div>
+            </section>
+
+            <section class="order-step" data-step="3">
+              <div class="step-heading">
+                <span>03</span>
+                <div>
+                  <h2>DOVE E QUANDO?</h2>
+                  <p>Scegli una fascia da 40 minuti. Accettiamo al massimo 4 consegne per fascia, così arriviamo puntuali.</p>
+                </div>
+              </div>
+              <form id="deliveryForm" novalidate>
+                <fieldset>
+                  <legend>GIORNO DI CONSEGNA</legend>
+                  <div class="choice-row date-choices" id="dateChoices"></div>
+                </fieldset>
+                <fieldset>
+                  <legend>FASCIA ORARIA <span>· MAX 4 ORDINI</span></legend>
+                  <div class="time-grid" id="timeGrid"></div>
+                </fieldset>
+                <div class="form-grid">
+                  <label>
+                    <span>NOME E COGNOME *</span>
+                    <input name="fullName" autocomplete="name" placeholder="Es. Giulia Rossi" required>
+                  </label>
+                  <label>
+                    <span>NUMERO DI CELLULARE *</span>
+                    <input name="phone" type="tel" autocomplete="tel" placeholder="Es. 333 123 4567" required>
+                  </label>
+                  <label class="wide">
+                    <span>VIA E NUMERO CIVICO *</span>
+                    <input name="address" autocomplete="street-address" placeholder="Es. Via della Quercia, 24" required>
+                  </label>
+                  <label>
+                    <span>LOCALITÀ *</span>
+                    <select name="area" id="areaSelect" required>
+                      <option value="">Scegli la località</option>
+                      <option value="Viterbo" data-fee="0">Viterbo · consegna gratuita</option>
+                      <option value="Vitorchiano" data-fee="0">Vitorchiano · consegna gratuita</option>
+                      <option value="Vetralla" data-fee="2.5">Vetralla · +2,50 €</option>
+                      <option value="San Martino" data-fee="2.5">San Martino · +2,50 €</option>
+                      <option value="Bagnaia" data-fee="2.5">Bagnaia · +2,50 €</option>
+                      <option value="Tobia" data-fee="2.5">Tobia · +2,50 €</option>
+                      <option value="Quercia" data-fee="2.5">Quercia · +2,50 €</option>
+                    </select>
+                  </label>
+                  <label class="wide">
+                    <span>RICHIESTE IN PIÙ</span>
+                    <textarea name="notes" rows="3" placeholder="Citofono, preferenze o indicazioni per la consegna…"></textarea>
+                  </label>
+                </div>
+              </form>
+              <div class="step-actions">
+                <button class="back-button" data-prev-step>← INDIETRO</button>
+                <button class="primary-button" id="toReview">RIVEDI L'ORDINE <span>→</span></button>
+              </div>
+            </section>
+
+            <section class="order-step" data-step="4">
+              <div class="step-heading">
+                <span>04</span>
+                <div>
+                  <h2>CI SIAMO QUASI</h2>
+                  <p>Controlla i dettagli: appena premi OK l'ordine risulta confermato. WhatsApp serve solo per inviare il riepilogo all'azienda.</p>
+                </div>
+              </div>
+              <div class="checkout-card" id="checkoutCard"></div>
+
+              <fieldset class="discovery-fieldset">
+                <legend>COME CI HAI CONOSCIUTO? *</legend>
+                <p>Ci aiuta a capire dove raccontare meglio il nostro progetto.</p>
+                <div class="discovery-grid">
+                  <label><input type="radio" name="discovery" value="Instagram"><span><b>◎</b> INSTAGRAM</span></label>
+                  <label><input type="radio" name="discovery" value="Facebook"><span><b>f</b> FACEBOOK</span></label>
+                  <label><input type="radio" name="discovery" value="Amici"><span><b>♡</b> AMICI</span></label>
+                  <label><input type="radio" name="discovery" value="Già cliente"><span><b>✓</b> GIÀ CLIENTE</span></label>
+                </div>
+                <small class="field-error" id="discoveryError"></small>
+              </fieldset>
+
+              <div class="satisfaction-note">
+                <strong>96%</strong>
+                <p>DEI NOSTRI CLIENTI È SODDISFATTO</p>
+              </div>
+
+              <label class="privacy-check">
+                <input type="checkbox" id="privacyCheck">
+                <span>Accetto l'informativa privacy e autorizzo il trattamento dei dati per la gestione dell'ordine.</span>
+              </label>
+
+              <div class="payoff">Sostieni il sostenibile</div>
+              <div class="step-actions">
+                <button class="back-button" data-prev-step>← MODIFICA</button>
+                <button class="primary-button" id="confirmOrder">CONFERMA ORDINE <span>→</span></button>
+              </div>
+            </section>
+
+            <section class="order-success" id="orderSuccess">
+              <div class="success-mark">✓</div>
+              <p class="eyebrow">ORDINE CONFERMATO</p>
+              <h2>LA TUA CASSETTA<br>HA MESSO <em>RADICI.</em></h2>
+              <p id="successCopy"></p>
+              <div class="success-actions">
+                <button class="primary-button" data-view-link="home">TORNA ALLA HOME</button>
+              </div>
+            </section>
+          </div>
+
+          <aside class="basket-summary" id="basketSummary">
+            <div class="basket-top">
+              <small>LA TUA CASSETTA</small>
+              <span id="summaryBoxLabel">MEDIA · 14 €</span>
+            </div>
+            <div class="crate-visual size-media" id="summaryCrateVisual">
+              <div class="crate-items" id="crateItems">
+                <span class="empty-crate">SCEGLI I TUOI<br>PRODOTTI</span>
+              </div>
+              <picture class="crate-picture" aria-hidden="true">
+                <img class="realistic-crate" src="assets/cassetta-media-nuova.png" alt="Cassetta rustica in legno inclinata verso chi guarda">
+              </picture>
+            </div>
+            <div class="basket-lines">
+              <div><span>PRODOTTI</span><strong id="summaryQuota">0 PRODOTTI · INCLUSI 4-6</strong></div>
+              <div><span>EXTRA PRODOTTI</span><strong id="summaryExtras">0,00 €</strong></div>
+              <div><span>CONSEGNA</span><strong id="summaryDelivery">DA DEFINIRE</strong></div>
+            </div>
+            <div class="basket-total">
+              <span>TOTALE</span>
+              <strong id="summaryTotal">14,00 €</strong>
+            </div>
+            <small class="basket-footnote">Il totale si aggiorna mentre componi.</small>
+          </aside>
+        </div>
+
+        <div class="mobile-basket-bar" id="mobileBasketBar">
+          <div><small>TOTALE</small><strong id="mobileTotal">14,00 €</strong></div>
+          <div><small>CASSETTA</small><strong id="mobileQuota">0 prodotti</strong></div>
+        </div>
+      </section>
+
+      <section class="view dashboard-view" id="dashboardView" data-view="dashboard">
+        <div class="dashboard-lock" id="dashboardLock" role="region" aria-label="Accesso area azienda">
+          <div class="dashboard-lock-card">
+            <span class="lock-icon" aria-hidden="true">●</span>
+            <p class="eyebrow">AREA RISERVATA</p>
+            <h2>ENTRA NELLA<br>DASHBOARD AZIENDA.</h2>
+            <p>Per la demo gratuita usiamo un PIN locale: basta per non lasciare la gestione in vista ai clienti.</p>
+            <label>
+              <span>PIN AREA AZIENDA</span>
+              <input id="adminPinInput" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Inserisci PIN">
+            </label>
+            <small class="field-error" id="adminPinError"></small>
+            <button class="primary-button" id="unlockDashboard" type="button">ENTRA <span>→</span></button>
+          </div>
+        </div>
+
+        <div class="dashboard-top">
+          <div>
+            <p class="eyebrow">AREA AZIENDA</p>
+            <h1>BUONGIORNO,<br><em>SOLE TERRA ACQUA.</em></h1>
+          </div>
+          <div class="dashboard-date">
+            <small>GIORNATA CONSEGNE</small>
+            <strong id="dashboardDate">SABATO 4 LUGLIO</strong>
+            <button class="dashboard-logout" id="lockDashboard" type="button">ESCI</button>
+          </div>
+        </div>
+
+        <div class="dashboard-stats">
+          <article><span>ORDINI OGGI</span><strong id="statOrders">18</strong><small>su 32 posti disponibili</small></article>
+          <article><span>INCASSO PREVISTO</span><strong id="statRevenue">291,50 €</strong><small>+12% dalla scorsa settimana</small></article>
+          <article><span>CONSEGNE EXTRA</span><strong id="statExtra">7</strong><small>fuori Viterbo</small></article>
+          <article class="mint"><span>CLIENTI SODDISFATTI</span><strong>96%</strong><small>da 15 recensioni private</small></article>
+        </div>
+
+        <section class="week-manager">
+          <div class="panel-head week-manager-head">
+            <div>
+              <p class="eyebrow">GESTIONE SETTIMANA</p>
+              <h2>CONSEGNE E PRODOTTI</h2>
+              <p>Aggiorna ciò che vedranno i clienti nella composizione della cassetta.</p>
+            </div>
+            <button class="primary-button" id="saveWeekSettings">SALVA E PUBBLICA <span>→</span></button>
+          </div>
+
+          <div class="week-manager-grid">
+            <div class="delivery-editor">
+              <div class="editor-title">
+                <div>
+                  <small>CALENDARIO</small>
+                  <h3>GIORNI DI CONSEGNA</h3>
+                </div>
+                <button id="addDeliveryDay">+ AGGIUNGI GIORNO</button>
+              </div>
+              <div class="delivery-days-editor" id="deliveryDaysEditor"></div>
+              <p class="editor-note">Le fasce da 40 minuti restano attive dalle 14:30 alle 19:50, massimo 4 ordini per fascia.</p>
+            </div>
+
+            <div class="products-editor">
+              <div class="editor-title">
+                <div>
+                  <small>DISPONIBILITÀ</small>
+                  <h3>VERDURE DELLA SETTIMANA</h3>
+                </div>
+                <span>FOTO · NOME · PESO</span>
+              </div>
+              <div class="admin-products-table">
+                <div class="admin-product-row admin-product-header">
+                  <span>FOTO</span><span>PRODOTTO</span><span>PESO PRODOTTO</span><span>DISPONIBILE</span>
+                </div>
+                <div id="weeklyProductsEditor"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="route-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">PERCORSI DI CONSEGNA</p>
+                <h2>GIRO INTELLIGENTE</h2>
+              </div>
+              <button class="optimize-button" id="optimizeRoutes">
+                <span>✦</span> OTTIMIZZA CON IA
+              </button>
+            </div>
+            <div class="route-map" id="routeMap">
+              <svg viewBox="0 0 700 330" preserveAspectRatio="none" aria-hidden="true">
+                <path class="map-road" d="M15 250C95 210 110 75 220 105s105 145 220 100 100-155 245-130" />
+                <path class="map-road thin" d="M80 25c55 65 125 240 250 220s190-135 350 35" />
+                <path class="route-line" id="routeLine" d="M105 232C175 180 182 116 258 120S365 230 460 185 545 100 618 85" />
+              </svg>
+              <button class="map-pin p1 active"><span>1</span><small>14:30</small></button>
+              <button class="map-pin p2"><span>2</span><small>15:10</small></button>
+              <button class="map-pin p3"><span>3</span><small>15:50</small></button>
+              <button class="map-pin p4"><span>4</span><small>16:30</small></button>
+              <div class="map-label l1">VITERBO</div>
+              <div class="map-label l2">BAGNAIA</div>
+              <div class="map-label l3">QUERCIA</div>
+            </div>
+            <div class="route-summary" id="routeSummary">
+              <div><span class="route-color sage"></span><p><strong>GIRO 1 · 14:30–16:30</strong><small>Viterbo centro → Quercia → Bagnaia</small></p><b>8 ORDINI</b></div>
+              <div><span class="route-color peach"></span><p><strong>GIRO 2 · 17:10–19:50</strong><small>San Martino → Vitorchiano → Vetralla</small></p><b>10 ORDINI</b></div>
+            </div>
+          </section>
+
+          <aside class="today-panel">
+            <div class="panel-head compact">
+              <div>
+                <p class="eyebrow">PROSSIME CONSEGNE</p>
+                <h2>OGGI</h2>
+              </div>
+              <span class="live-badge"><i></i> LIVE</span>
+            </div>
+            <div class="next-deliveries" id="nextDeliveries"></div>
+          </aside>
+        </div>
+
+        <section class="orders-panel">
+          <div class="panel-head orders-heading">
+            <div>
+              <p class="eyebrow">TUTTI GLI ORDINI</p>
+              <h2>PIANO DI CONSEGNA</h2>
+            </div>
+            <div class="order-filters">
+              <button class="active" data-order-filter="all">TUTTI</button>
+              <button data-order-filter="Viterbo">VITERBO</button>
+              <button data-order-filter="Fuori zona">FUORI ZONA</button>
+            </div>
+          </div>
+          <div class="orders-table" id="ordersTable"></div>
+        </section>
+
+        <section class="orders-panel loyalty-panel">
+          <div class="panel-head orders-heading">
+            <div>
+              <p class="eyebrow">CLIENTI E PUNTI</p>
+              <h2>PROGRAMMA FEDELTÀ</h2>
+              <p>Il cliente viene riconosciuto come persona unica dal numero di telefono. I punti entrano solo quando confermi “ordine consegnato”.</p>
+            </div>
+            <div class="loyalty-prize">
+              <strong>10 PUNTI</strong>
+              <span>CASSETTA DA 17 €<br>AL PREZZO DI 12 €</span>
+            </div>
+          </div>
+          <div class="customers-table" id="customersTable"></div>
+        </section>
+
+        <section class="review-panel">
+          <div>
+            <p class="eyebrow">RECENSIONI PRIVATE</p>
+            <h2>ASCOLTA CHI HA<br>RICEVUTO LA CASSETTA.</h2>
+            <p>La richiesta viene inviata solo dopo la consegna. Le risposte restano private e alimentano la percentuale di soddisfazione.</p>
+          </div>
+          <div class="review-mini-card">
+            <span>ULTIMA RECENSIONE</span>
+            <div class="stars">★★★★★</div>
+            <blockquote>“Tutto freschissimo, soprattutto le zucchine. Consegna precisa.”</blockquote>
+            <small>CLIENTE VERIFICATO · ORDINE #R0015</small>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <span class="brand-logo-crop footer-logo" aria-hidden="true">
+          <img src="assets/logo-sole-terra-acqua.png" alt="">
+        </span>
+        <span>
+          <strong>SOLE TERRA ACQUA</strong>
+          <small>AZIENDA AGRICOLA</small>
+        </span>
+      </div>
+      <p>COLTIVATO CON CURA.<br>CONSEGNATO CON INTELLIGENZA.</p>
+      <nav>
+        <a href="#home" data-view-link="home">HOME</a>
+        <a href="#componi" data-view-link="builder">CASSETTA</a>
+        <a href="#contatti" data-home-anchor="contatti">CONTATTI</a>
+      </nav>
+      <small>SOLE TERRA ACQUA · ORDINI ONLINE</small>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31931622c3ced1f',t:'MTc4NzgxMzk2MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

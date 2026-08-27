@@ -1,0 +1,7 @@
+# roba di sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# config locale di Claude Code (non serve online)
+.claude/
