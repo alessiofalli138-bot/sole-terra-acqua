@@ -1,6 +1,6 @@
-const SHEET_1 = "assets/catalogo-vettoriali-1.png";
-const SHEET_2 = "assets/catalogo-vettoriali-2.png";
-const SHEET_EXTRA = "assets/catalogo-vettoriali-extra.png";
+const SHEET_1 = "assets/catalogo-vettoriali-1.webp";
+const SHEET_2 = "assets/catalogo-vettoriali-2.webp";
+const SHEET_EXTRA = "assets/catalogo-vettoriali-extra.webp";
 const WHATSAPP_NUMBER = "393202732892";
 const ADMIN_PIN = "2892";
 const ADMIN_SESSION_KEY = "sole-terra-acqua-admin-unlocked";
@@ -54,9 +54,9 @@ const BOXES = {
 };
 
 const CRATE_IMAGES = {
-  piccola: "assets/cassetta-piccola-nuova.png",
-  media: "assets/cassetta-media-nuova.png",
-  grande: "assets/cassetta-grande-nuova.png"
+  piccola: "assets/cassetta-piccola-nuova.webp",
+  media: "assets/cassetta-media-nuova.webp",
+  grande: "assets/cassetta-grande-nuova.webp"
 };
 
 const CRATE_SLOTS = [
@@ -318,15 +318,15 @@ function vectorMetrics(product) {
 
 function productVisualStyle(product, useCustomerPhoto = true) {
   if (useCustomerPhoto && product.customImage) {
-    return `background-image:url("${product.customImage}");background-size:cover;background-position:center`;
+    return `background-image:url('${product.customImage}');background-size:cover;background-position:center`;
   }
   const vector = vectorMetrics(product);
-  return `background-image:url("${product.sheet}");background-size:${vector.size};background-position:${vector.position}`;
+  return `background-image:url('${product.sheet}');background-size:${vector.size};background-position:${vector.position}`;
 }
 
 function vectorCustomProperties(product) {
   const vector = vectorMetrics(product);
-  return `--vector-sheet:url("${product.sheet}");--vector-size:${vector.size};--vector-position:${vector.position}`;
+  return `--vector-sheet:url('${product.sheet}');--vector-size:${vector.size};--vector-position:${vector.position}`;
 }
 
 function showToast(message) {

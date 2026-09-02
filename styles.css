@@ -155,7 +155,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 
 .hero { height: min(760px, calc(100vh - var(--header-height))); min-height: 620px; position: relative; overflow: hidden; background: var(--green-deep); }
 .hero { border-radius: 0 0 32px 32px; }
-.hero > img { width: 100%; height: 100%; object-fit: cover; }
+.hero > img, .hero > picture, .hero > picture > img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .hero-shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(19,35,24,.02) 0%, rgba(19,35,24,.13) 40%, rgba(19,35,24,.78) 100%); }
 .hero-content { position: absolute; width: min(540px, 42vw); right: max(7vw, calc((100vw - 1180px)/2)); top: 50%; transform: translateY(-50%); color: #fffaf0; }
 .eyebrow { font-size: .67rem; letter-spacing: .2em; font-weight: 900; color: var(--terracotta); margin: 0 0 18px; }
@@ -255,7 +255,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .story { padding-block: 120px; display: grid; grid-template-columns: 1.02fr .98fr; gap: clamp(50px, 8vw, 120px); align-items: center; }
 .story-visual { position: relative; padding: 0 0 45px 45px; }
 .story-photo { height: 560px; overflow: hidden; border-radius: var(--radius); }
-.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 20% center; transform: scale(1.15); }
+.story-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.04); }
 .story-card { position: absolute; left: 0; bottom: 0; background: var(--peach); width: 185px; height: 155px; padding: 26px; display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--soft-radius); }
 .story-card strong { font: italic 1.8rem Georgia, serif; }
 .story-card span { font-size: .68rem; line-height: 1.5; letter-spacing: .14em; font-weight: 900; }
@@ -274,19 +274,25 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .section-heading > p { color: var(--muted); line-height: 1.7; margin-bottom: 30px; }
 .weekly-products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 40px 0 44px; }
 .weekly-products article { background: var(--cream); padding-bottom: 18px; position: relative; overflow: hidden; border-radius: var(--soft-radius); }
-.product-sprite {
-  background-image: url("assets/prodotti-settimanali.png");
-  background-size: 500% 200%;
-  background-position: calc(var(--x) * 25%) calc(var(--y) * 100%);
+.product-photo {
+  width: 100%;
   aspect-ratio: 1.15;
+  object-fit: cover;
   margin-bottom: 16px;
   transition: transform .4s;
 }
-.weekly-products article:hover .product-sprite { transform: scale(1.04); }
+.weekly-products article:hover .product-photo { transform: scale(1.04); }
 .weekly-products span, .weekly-products small { padding-left: 18px; display: block; }
 .weekly-products span { font-weight: 900; letter-spacing: .08em; font-size: .78rem; }
 .weekly-products small { color: var(--muted); margin-top: 5px; font-size: .64rem; }
 .centered { margin: 0 auto; display: flex; width: max-content; }
+
+.field-gallery { padding-block: 10px 110px; }
+.gallery-rail { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 42px; }
+.gallery-rail figure { margin: 0; }
+.gallery-rail img { width: 100%; aspect-ratio: .8; object-fit: cover; border-radius: var(--soft-radius); transition: transform .5s; }
+.gallery-rail figure:hover img { transform: scale(1.03); }
+.gallery-rail figcaption { margin-top: 13px; font-size: .6rem; letter-spacing: .1em; font-weight: 900; color: var(--muted); text-transform: uppercase; line-height: 1.5; }
 
 .home-cta { background: var(--green); color: var(--cream); padding: 85px max(7vw, calc((100vw - 1180px)/2)); display: grid; grid-template-columns: 1fr 350px; align-items: center; gap: 80px; border-radius: 32px; margin-inline: 12px; }
 .home-cta h2 { font-size: clamp(3rem, 5.2vw, 6rem); margin: 0; }
@@ -376,7 +382,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .basket-top small { font-size: .58rem; letter-spacing: .14em; font-weight: 900; }
 .basket-top span { font-size: .58rem; color: var(--green); font-weight: 900; }
 .crate-visual {
-  --crate-image: url("assets/cassetta-media-nuova.png");
+  --crate-image: url("assets/cassetta-media-nuova.webp");
   --crate-width: 100%;
   --crate-height: 250px;
   --item-inset: 25px;
@@ -389,19 +395,19 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   transition: height .45s ease;
 }
 .crate-visual.size-piccola {
-  --crate-image: url("assets/cassetta-piccola-nuova.png");
+  --crate-image: url("assets/cassetta-piccola-nuova.webp");
   --crate-width: 102%;
   --crate-height: 220px;
   height: 260px;
 }
 .crate-visual.size-media {
-  --crate-image: url("assets/cassetta-media-nuova.png");
+  --crate-image: url("assets/cassetta-media-nuova.webp");
   --crate-width: 120%;
   --crate-height: 280px;
   height: 320px;
 }
 .crate-visual.size-grande {
-  --crate-image: url("assets/cassetta-grande-nuova.png");
+  --crate-image: url("assets/cassetta-grande-nuova.webp");
   --crate-width: 138%;
   --crate-height: 350px;
   height: 395px;
@@ -866,6 +872,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   .story-photo { height: 480px; }
   .section-heading { grid-template-columns: 1fr; gap: 0; }
   .weekly-products { grid-template-columns: repeat(2, 1fr); }
+  .field-gallery { padding-bottom: 85px; }
+  .gallery-rail { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; scrollbar-width: none; padding-bottom: 4px; }
+  .gallery-rail::-webkit-scrollbar { display: none; }
+  .gallery-rail figure { flex: 0 0 62%; scroll-snap-align: start; }
   .home-cta { grid-template-columns: 1fr; gap: 25px; }
   .builder-header { grid-template-columns: 1fr; gap: 38px; }
   .builder-layout { grid-template-columns: 1fr; }
@@ -897,7 +907,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   .story h2, .weekly h2, .home-cta h2, .contacts h2 { font-size: 2.55rem; }
   .weekly { padding-block: 75px; }
   .weekly-products { gap: 9px; }
-  .product-sprite { aspect-ratio: 1; }
+  .product-photo { aspect-ratio: 1; }
   .home-cta { padding: 65px 25px; }
   .contacts { grid-template-columns: 1fr; gap: 20px; padding-block: 75px; }
   .contact-grid { grid-template-columns: 1fr; }

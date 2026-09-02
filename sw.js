@@ -1,23 +1,21 @@
-const CACHE_NAME = "sole-terra-acqua-v10";
+const CACHE_NAME = "sole-terra-acqua-v11";
+
+// Solo l'essenziale per far comparire il sito subito, anche senza rete.
+// Tutto il resto (foto della galleria, immagini del catalogo) viene messo in
+// cache dal gestore "fetch" qui sotto la prima volta che serve davvero, cosi'
+// la prima visita non scarica decine di megabyte sul telefono del cliente.
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./assets/logo-sole-terra-acqua.png",
+  "./assets/logo-sole-terra-acqua.webp",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./assets/apple-touch-icon.png",
-  "./assets/hero-campo.png",
-  "./assets/prodotti-settimanali.png",
-  "./assets/prodotti-trasparenti.png",
-  "./assets/cassetta-piccola-nuova.png",
-  "./assets/cassetta-media-nuova.png",
-  "./assets/cassetta-grande-nuova.png",
-  "./assets/catalogo-vettoriali-1.png",
-  "./assets/catalogo-vettoriali-2.png",
-  "./assets/catalogo-vettoriali-extra.png"
+  "./assets/foto-campo-hero.webp",
+  "./assets/foto-campo-hero-mobile.webp"
 ];
 
 self.addEventListener("install", event => {

@@ -23,7 +23,7 @@
 
       <a class="brand" href="#home" data-view-link="home" aria-label="Sole Terra Acqua, torna alla home">
         <span class="brand-logo-crop" aria-hidden="true">
-          <img src="assets/logo-sole-terra-acqua.png" alt="">
+          <img src="assets/logo-sole-terra-acqua.webp" alt="">
         </span>
         <span>
           <strong>SOLE TERRA ACQUA</strong>
@@ -67,7 +67,10 @@
     <main>
       <section class="view active" id="homeView" data-view="home">
         <div class="hero">
-          <img src="assets/hero-campo.png" alt="Cassetta di ortaggi freschi davanti a un campo coltivato">
+          <picture>
+            <source media="(max-width: 700px)" srcset="assets/foto-campo-hero-mobile.webp">
+            <img src="assets/foto-campo-hero.webp" alt="I filari dell'orto di Sole Terra Acqua nella campagna viterbese" fetchpriority="high">
+          </picture>
           <div class="hero-shade"></div>
           <div class="hero-content">
             <p class="eyebrow light">DAL NOSTRO CAMPO · A CASA TUA</p>
@@ -93,7 +96,7 @@
         <section class="story section-wrap" id="storia">
           <div class="story-visual reveal">
             <div class="story-photo">
-              <img src="assets/hero-campo.png" alt="Il campo di Sole Terra Acqua al tramonto">
+              <img src="assets/foto-consegne.webp" alt="Le cassette composte dai clienti, pronte per il giro di consegne" loading="lazy">
             </div>
             <div class="story-card">
               <strong>DAL 2018</strong>
@@ -124,12 +127,29 @@
             <p>Dieci prodotti appena raccolti. Le disponibilità e i pesi cambiano ogni settimana, proprio come l'orto.</p>
           </div>
           <div class="weekly-products reveal" aria-label="Prodotti disponibili">
-            <article style="--x:0;--y:0"><div class="product-sprite"></div><span>POMODORI</span><small>500 G</small></article>
-            <article style="--x:1;--y:0"><div class="product-sprite"></div><span>ZUCCHINE</span><small>500 G</small></article>
-            <article style="--x:2;--y:0"><div class="product-sprite"></div><span>CAROTE</span><small>500 G</small></article>
-            <article style="--x:3;--y:0"><div class="product-sprite"></div><span>MELANZANE</span><small>2 PZ</small></article>
+            <article><img class="product-photo" src="assets/p-zucchine.webp" alt="Zucchine romanesche appena raccolte" loading="lazy"><span>ZUCCHINE</span><small>500 G</small></article>
+            <article><img class="product-photo" src="assets/p-lattuga.webp" alt="Cassetta di lattughe appena tagliate" loading="lazy"><span>LATTUGA</span><small>1 CESPO</small></article>
+            <article><img class="product-photo" src="assets/p-melanzane.webp" alt="Melanzane striate raccolte in campo" loading="lazy"><span>MELANZANE</span><small>500 G</small></article>
+            <article><img class="product-photo" src="assets/p-peperoni.webp" alt="Peperoni verdi appena raccolti" loading="lazy"><span>PEPERONI</span><small>500 G</small></article>
           </div>
           <button class="secondary-button centered" data-start-builder>VEDI TUTTI I PRODOTTI <span>→</span></button>
+        </section>
+
+        <section class="field-gallery section-wrap">
+          <div class="section-heading reveal">
+            <div>
+              <p class="eyebrow">DAL CAMPO</p>
+              <h2>QUELLO CHE VEDI<br>È QUELLO CHE <em>RICEVI.</em></h2>
+            </div>
+            <p>Nessuna foto comprata. Questi sono i nostri filari, le nostre cassette, il nostro raccolto.</p>
+          </div>
+          <div class="gallery-rail reveal">
+            <figure><img src="assets/g-raccolto.webp" alt="Cassette di zucchine, lattughe e rucola appena raccolte" loading="lazy"><figcaption>Il raccolto del mattino</figcaption></figure>
+            <figure><img src="assets/g-patate.webp" alt="Filari di patate con una striscia di fiori per gli impollinatori" loading="lazy"><figcaption>Fiori tra i filari, per le api</figcaption></figure>
+            <figure><img src="assets/g-basilico.webp" alt="Cassetta di basilico appena colto" loading="lazy"><figcaption>Basilico colto a mano</figcaption></figure>
+            <figure><img src="assets/g-fragole.webp" alt="Cassetta piena di fragole mature" loading="lazy"><figcaption>Fragole di stagione</figcaption></figure>
+            <figure><img src="assets/g-frutti-bosco.webp" alt="More e lamponi raccolti in vaschetta" loading="lazy"><figcaption>More e lamponi</figcaption></figure>
+          </div>
         </section>
 
         <section class="home-cta">
@@ -247,7 +267,7 @@
                     <span class="empty-crate">LA CASSETTA È VUOTA<br>AGGIUNGI IL PRIMO PRODOTTO</span>
                   </div>
                   <picture class="crate-picture" aria-hidden="true">
-                    <img class="realistic-crate" src="assets/cassetta-media-nuova.png" alt="Cassetta rustica in legno inclinata verso chi guarda">
+                    <img class="realistic-crate" src="assets/cassetta-media-nuova.webp" alt="Cassetta rustica in legno inclinata verso chi guarda" loading="lazy">
                   </picture>
                 </div>
               </div>
@@ -373,7 +393,7 @@
                 <span class="empty-crate">SCEGLI I TUOI<br>PRODOTTI</span>
               </div>
               <picture class="crate-picture" aria-hidden="true">
-                <img class="realistic-crate" src="assets/cassetta-media-nuova.png" alt="Cassetta rustica in legno inclinata verso chi guarda">
+                <img class="realistic-crate" src="assets/cassetta-media-nuova.webp" alt="Cassetta rustica in legno inclinata verso chi guarda" loading="lazy">
               </picture>
             </div>
             <div class="basket-lines">
@@ -563,7 +583,7 @@
     <footer class="site-footer">
       <div class="footer-brand">
         <span class="brand-logo-crop footer-logo" aria-hidden="true">
-          <img src="assets/logo-sole-terra-acqua.png" alt="">
+          <img src="assets/logo-sole-terra-acqua.webp" alt="">
         </span>
         <span>
           <strong>SOLE TERRA ACQUA</strong>
