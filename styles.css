@@ -774,6 +774,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   cursor: pointer;
 }
 .empty-table-note { padding: 18px 5px; color: var(--muted); font-size: .72rem; border-top: 1px solid var(--line); }
+.preserves-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.preserves-count { font-size: .56rem; font-weight: 900; letter-spacing: .08em; color: var(--green); margin: 12px 0 0; }
+.preserves-count.warning { color: var(--terracotta); }
+.preserves-editor { display: grid; gap: 10px; margin-top: 22px; }
+.preserve-row { display: grid; grid-template-columns: 1fr 55px 32px; gap: 12px; align-items: center; }
+.preserve-row input[type="text"] { min-height: 42px; padding: 9px 12px; width: 100%; }
+.preserve-row > button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: #f1dfd8; color: var(--terracotta); cursor: pointer; font-size: .9rem; line-height: 1; }
+.reward-cell { display: grid; gap: 7px; justify-items: stretch; }
+.reward-choice { min-height: 34px; padding: 6px 9px; font-size: .55rem; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); width: 100%; }
+.customer-name .last-gift { color: var(--terracotta); font-weight: 900; margin-top: 3px; }
+
 .review-panel { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 70px; background: var(--green); color: var(--cream); }
 .review-panel h2 { font-size: 2.4rem; }
 .review-panel > div:first-child > p:last-child { color: #c6d1c7; line-height: 1.6; max-width: 530px; font-family: Arial, sans-serif; font-size: .8rem; }
@@ -931,6 +942,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   .week-manager { padding: 18px; }
   .week-manager-head { align-items: flex-start; flex-direction: column; }
   .week-manager-head .primary-button { width: 100%; }
+  .preserves-actions { width: 100%; }
+  .preserves-actions button { flex: 1; }
   .panel-head { align-items: flex-start; gap: 12px; }
   .optimize-button { padding: 10px; font-size: .48rem; }
   .route-map { height: 260px; }

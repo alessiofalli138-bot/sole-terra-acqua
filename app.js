@@ -9,6 +9,14 @@ const OWNER_VALUE = "1";
 const ORDERS_STORAGE_KEY = "sole-terra-acqua-orders";
 const CUSTOMERS_STORAGE_KEY = "sole-terra-acqua-customers";
 const POINTS_FOR_REWARD = 10;
+const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
+const DEFAULT_PRESERVES = [
+  { id: "passata", name: "Passata di pomodoro", enabled: true },
+  { id: "melanzane-olio", name: "Melanzane sott'olio", enabled: true },
+  { id: "peperoni-olio", name: "Peperoni sott'olio", enabled: true },
+  { id: "confettura-fichi", name: "Confettura di fichi", enabled: true },
+  { id: "zucchine-agrodolce", name: "Zucchine in agrodolce", enabled: false }
+];
 
 const PRODUCTS = [
   { id: "peperoni", name: "Peperoni", weight: "500 g", emoji: "🫑", sheet: SHEET_1, cols: 5, rows: 4, x: 0, y: 0, enabled: true },
@@ -102,6 +110,7 @@ const state = {
   orders: [...DEMO_ORDERS],
   customers: {},
   orderFilter: "all",
+  preserves: [],
   optimized: false
 };
 
@@ -208,9 +217,34 @@ function rebuildCustomersFromOrders() {
 
 function rewardStatus(customer) {
   const available = Math.max(0, customer.rewardsEarned || 0) - Math.max(0, customer.rewardsUsed || 0);
-  if (available > 0) return `${available} premio disponibile`;
+  if (available > 0) return `${available} omaggio da consegnare`;
   const missing = POINTS_FOR_REWARD - ((customer.points || 0) % POINTS_FOR_REWARD);
-  return `${missing} punti al premio`;
+  return missing === 1 ? "1 consegna all'omaggio" : `${missing} consegne all'omaggio`;
+}
+
+function loadPreserves() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(PRESERVES_STORAGE_KEY));
+    if (Array.isArray(saved) && saved.length) {
+      state.preserves = saved
+        .filter(item => item && typeof item.name === "string")
+        .map(item => ({ id: item.id || `c${Math.random().toString(36).slice(2)}`, name: item.name, enabled: item.enabled !== false }));
+      return;
+    }
+  } catch (_) {}
+  state.preserves = DEFAULT_PRESERVES.map(item => ({ ...item }));
+}
+
+function savePreserves() {
+  try {
+    localStorage.setItem(PRESERVES_STORAGE_KEY, JSON.stringify(state.preserves));
+  } catch (_) {
+    showToast("Memoria piena: l'elenco conserve potrebbe non essere salvato.");
+  }
+}
+
+function availablePreserves() {
+  return state.preserves.filter(item => item.enabled !== false && item.name.trim());
 }
 
 function encodeForUrl(data) {
@@ -968,17 +1002,24 @@ function buildCustomerNotificationUrl(order, customer) {
   if (!phone) return "";
   const availableRewards = Math.max(0, (customer.rewardsEarned || 0) - (customer.rewardsUsed || 0));
   const missingPoints = POINTS_FOR_REWARD - ((customer.points || 0) % POINTS_FOR_REWARD);
-  const message = [
-    `Ciao ${order.name.split(" ")[0]}, il tuo ordine ${order.id} risulta consegnato. Grazie da Sole Terra Acqua!`,
-    "",
-    `Hai ora ${customer.points || 0} punti fedeltà.`,
-    availableRewards > 0
-      ? "Hai un premio disponibile: cassetta grande da 17 € al prezzo della piccola da 12 €."
-      : `Ti mancano ${missingPoints} punti al premio.`,
-    "",
-    "A presto!"
-  ].join("\n");
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  const nome = String(order.name || "").split(" ")[0];
+  const righe = [`Ciao ${nome}, il tuo ordine ${order.id} risulta consegnato. Grazie da Sole Terra Acqua!`, ""];
+  if (availableRewards > 0) {
+    const conserve = availablePreserves();
+    righe.push(`Questa è la tua consegna numero ${customer.points || POINTS_FOR_REWARD}: hai diritto a una CONSERVA IN OMAGGIO.`);
+    if (conserve.length) {
+      righe.push("", "Puoi scegliere tra:");
+      conserve.forEach(item => righe.push(`- ${item.name}`));
+      righe.push("", "Rispondi con quella che preferisci e te la porto alla prossima consegna.");
+    } else {
+      righe.push("", "Rispondi a questo messaggio e ci mettiamo d'accordo sulla conserva che preferisci.");
+    }
+  } else {
+    const quante = missingPoints === 1 ? "ancora una consegna" : `ancora ${missingPoints} consegne`;
+    righe.push(`Sei a ${customer.points || 0} consegne su ${POINTS_FOR_REWARD}: ${quante} e ricevi una conserva in omaggio.`);
+  }
+  righe.push("", "A presto!");
+  return `https://wa.me/${phone}?text=${encodeURIComponent(righe.join("\n"))}`;
 }
 
 function markOrderDelivered(orderId) {
@@ -1001,13 +1042,17 @@ function useCustomerReward(customerId) {
   if (!customer) return;
   const available = Math.max(0, (customer.rewardsEarned || 0) - (customer.rewardsUsed || 0));
   if (!available) {
-    showToast("Questo cliente non ha premi disponibili.");
+    showToast("Questo cliente non ha omaggi disponibili.");
     return;
   }
+  const selettore = $(`[data-reward-choice="${customerId}"]`);
+  const scelta = selettore && selettore.value ? selettore.value : "";
   customer.rewardsUsed = (customer.rewardsUsed || 0) + 1;
+  customer.lastReward = scelta;
+  customer.lastRewardDate = new Date().toISOString().slice(0, 10);
   saveBusinessData();
   renderDashboard(state.orderFilter);
-  showToast("Premio usato: cassetta grande applicata al prezzo della piccola.");
+  showToast(scelta ? `Omaggio segnato: ${scelta}.` : "Omaggio segnato come consegnato.");
 }
 
 function renderCustomers() {
@@ -1020,21 +1065,86 @@ function renderCustomers() {
     table.innerHTML = `<div class="empty-table-note">Ancora nessun cliente consegnato. I punti appariranno dopo il primo ordine segnato come consegnato.</div>`;
     return;
   }
+  const conserve = availablePreserves();
+  const opzioniConserve = conserve.length
+    ? conserve.map(item => `<option value="${escapeHtml(item.name)}">${escapeHtml(item.name)}</option>`).join("")
+    : `<option value="">Nessuna conserva disponibile</option>`;
+
   table.innerHTML = `
-    <div class="customer-row header"><span>CLIENTE</span><span>TELEFONO</span><span>PUNTI</span><span>ORDINI</span><span>PREMIO</span></div>
+    <div class="customer-row header"><span>CLIENTE</span><span>TELEFONO</span><span>VERSO L’OMAGGIO</span><span>CONSEGNE</span><span>OMAGGIO</span></div>
     ${customers.map(customer => {
       const availableRewards = Math.max(0, (customer.rewardsEarned || 0) - (customer.rewardsUsed || 0));
       return `
         <div class="customer-row">
-          <span class="customer-name"><strong>${escapeHtml(customer.name || "Cliente")}</strong><small>Ultimo ordine ${escapeHtml(customer.lastOrderId || "—")}</small></span>
+          <span class="customer-name"><strong>${escapeHtml(customer.name || "Cliente")}</strong><small>Ultimo ordine ${escapeHtml(customer.lastOrderId || "—")}</small>${customer.lastReward ? `<small class="last-gift">Omaggio dato: ${escapeHtml(customer.lastReward)}</small>` : ""}</span>
           <span>${escapeHtml(customerDisplayPhone(customer.phone))}</span>
-          <span class="points-pill ${availableRewards ? "reward-ready" : ""}">${customer.points || 0} / ${POINTS_FOR_REWARD}</span>
-          <span>${customer.orders || 0} consegnati</span>
-          <span>${availableRewards ? `<button class="reward-action" data-use-reward="${escapeHtml(customer.id)}">USA PREMIO</button>` : rewardStatus(customer)}</span>
+          <span class="points-pill ${availableRewards ? "reward-ready" : ""}">${availableRewards ? "OMAGGIO PRONTO" : `${(customer.points || 0) % POINTS_FOR_REWARD} / ${POINTS_FOR_REWARD}`}</span>
+          <span>${(customer.orders || 0) === 1 ? "1 consegna" : `${customer.orders || 0} consegne`}</span>
+          <span>${availableRewards ? `
+            <span class="reward-cell">
+              <select class="reward-choice" data-reward-choice="${escapeHtml(customer.id)}" aria-label="Conserva scelta da ${escapeHtml(customer.name || "cliente")}">${opzioniConserve}</select>
+              <button class="reward-action" data-use-reward="${escapeHtml(customer.id)}">SEGNA OMAGGIO</button>
+            </span>` : rewardStatus(customer)}</span>
         </div>
       `;
     }).join("")}
   `;
+}
+
+function renderPreservesEditor() {
+  const editor = $("#preservesEditor");
+  if (!editor) return;
+  editor.innerHTML = state.preserves.map((item, index) => `
+    <div class="preserve-row">
+      <input type="text" value="${escapeHtml(item.name)}" data-preserve-name="${index}" placeholder="Nome della conserva" aria-label="Nome conserva ${index + 1}">
+      <label class="availability-toggle" title="Proponila come omaggio">
+        <input type="checkbox" data-preserve-enabled="${index}" ${item.enabled !== false ? "checked" : ""}>
+        <span></span>
+      </label>
+      <button type="button" data-remove-preserve="${index}" aria-label="Rimuovi ${escapeHtml(item.name || "conserva")}">×</button>
+    </div>
+  `).join("");
+
+  const disponibili = availablePreserves().length;
+  const nota = $("#preservesCount");
+  if (nota) {
+    nota.textContent = disponibili === 0
+      ? "Nessuna conserva attiva: il cliente non vedrebbe nessuna scelta."
+      : disponibili === 1
+        ? "1 conserva proposta al cliente."
+        : `${disponibili} conserve proposte al cliente.`;
+    nota.classList.toggle("warning", disponibili === 0);
+  }
+}
+
+function addPreserve() {
+  state.preserves.push({ id: `c${Date.now()}`, name: "", enabled: true });
+  renderPreservesEditor();
+  const ultimo = $$("[data-preserve-name]").pop();
+  if (ultimo) ultimo.focus();
+}
+
+function removePreserve(index) {
+  state.preserves.splice(index, 1);
+  savePreserves();
+  renderPreservesEditor();
+  renderCustomers();
+}
+
+function savePreservesSettings() {
+  state.preserves = state.preserves
+    .map((item, index) => ({
+      id: item.id,
+      name: (($(`[data-preserve-name="${index}"]`) || {}).value || "").trim(),
+      enabled: Boolean(($(`[data-preserve-enabled="${index}"]`) || {}).checked)
+    }))
+    .filter(item => item.name);
+  savePreserves();
+  renderPreservesEditor();
+  renderCustomers();
+  showToast(availablePreserves().length
+    ? "Elenco conserve aggiornato."
+    : "Salvato, ma nessuna conserva e' attiva: attivane almeno una.");
 }
 
 function renderDashboard(filter = state.orderFilter || "all") {
@@ -1080,6 +1190,7 @@ function renderDashboard(filter = state.orderFilter || "all") {
   $("#statExtra").textContent = state.orders.filter(order => !["Viterbo", "Vitorchiano"].includes(order.area)).length + 3;
   renderCustomers();
   renderWeekEditor();
+  renderPreservesEditor();
 }
 
 function optimizeRoutes() {
@@ -1156,6 +1267,12 @@ function setupEvents() {
     event.target.classList.remove("invalid");
     $("#adminPinError").textContent = "";
   });
+  $("#savePreserves").addEventListener("click", savePreservesSettings);
+  $("#addPreserve").addEventListener("click", addPreserve);
+  $("#preservesEditor").addEventListener("click", event => {
+    const button = event.target.closest("[data-remove-preserve]");
+    if (button) removePreserve(Number(button.dataset.removePreserve));
+  });
   $("#saveWeekSettings").addEventListener("click", saveWeekSettings);
   $("#addDeliveryDay").addEventListener("click", addDeliveryDay);
   $("#deliveryDaysEditor").addEventListener("click", event => {
@@ -1207,6 +1324,7 @@ function openInitialRoute() {
 function init() {
   loadLocalOrder();
   loadAdminSettings();
+  loadPreserves();
   if (!state.deliveryDays.length) state.deliveryDays = getDefaultDeliveryDays();
   renderProducts();
   setupDatesAndTimes();

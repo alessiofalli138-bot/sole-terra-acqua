@@ -548,14 +548,30 @@
             <div>
               <p class="eyebrow">CLIENTI E PUNTI</p>
               <h2>PROGRAMMA FEDELTÀ</h2>
-              <p>Il cliente viene riconosciuto come persona unica dal numero di telefono. I punti entrano solo quando confermi “ordine consegnato”.</p>
+              <p>Il cliente viene riconosciuto come persona unica dal numero di telefono. Le consegne si contano solo quando confermi “ordine consegnato”: alla decima parte da sola la proposta dell’omaggio.</p>
             </div>
             <div class="loyalty-prize">
-              <strong>10 PUNTI</strong>
-              <span>CASSETTA DA 17 €<br>AL PREZZO DI 12 €</span>
+              <strong>10 CONSEGNE</strong>
+              <span>UNA CONSERVA<br>IN OMAGGIO</span>
             </div>
           </div>
           <div class="customers-table" id="customersTable"></div>
+        </section>
+
+        <section class="orders-panel preserves-panel">
+          <div class="panel-head orders-heading">
+            <div>
+              <p class="eyebrow">OMAGGIO FEDELTÀ</p>
+              <h2>LE TUE CONSERVE</h2>
+              <p>Alla decima consegna il cliente riceve su WhatsApp l’elenco qui sotto e risponde con quella che preferisce. Spegni l’interruttore di quelle finite: spariscono dal messaggio senza cancellarle.</p>
+              <p class="preserves-count" id="preservesCount"></p>
+            </div>
+            <div class="preserves-actions">
+              <button type="button" class="secondary-button" id="addPreserve">+ AGGIUNGI</button>
+              <button type="button" class="primary-button" id="savePreserves">SALVA <span>→</span></button>
+            </div>
+          </div>
+          <div class="preserves-editor" id="preservesEditor"></div>
         </section>
 
         <section class="review-panel">
