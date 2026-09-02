@@ -59,28 +59,8 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   cursor: pointer;
 }
 .menu-button span { width: 21px; height: 2px; background: var(--ink); display: block; margin: 5px 0; }
-.brand { display: inline-flex; gap: 11px; align-items: center; width: max-content; }
-.brand-logo-crop {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: #ded5bc;
-  display: block;
-  position: relative;
-  overflow: hidden;
-  flex: 0 0 auto;
-  border: 1px solid rgba(52, 69, 31, .25);
-}
-.brand-logo-crop img {
-  position: absolute;
-  width: 163px;
-  max-width: none;
-  height: auto;
-  left: -73px;
-  top: -5px;
-}
-.brand strong { display: block; letter-spacing: .1em; font-size: 1rem; white-space: nowrap; }
-.brand small { display: block; margin-top: 2px; letter-spacing: .22em; font-size: .55rem; color: var(--green); }
+.brand { display: inline-flex; align-items: center; width: max-content; }
+.brand-logo { height: 68px; width: auto; max-width: none; }
 .desktop-nav { display: flex; justify-content: center; gap: clamp(22px, 3.5vw, 54px); }
 .desktop-nav a { font-size: .71rem; font-weight: 800; letter-spacing: .12em; position: relative; padding: 12px 0; }
 .desktop-nav a::after {
@@ -843,8 +823,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 .footer-brand strong, .footer-brand small { display: block; }
 .footer-brand strong { font-size: .78rem; letter-spacing: .12em; }
 .footer-brand small { font-size: .48rem; letter-spacing: .18em; color: var(--peach); margin-top: 5px; }
-.footer-logo { width: 64px; height: 64px; }
-.footer-logo img { width: 125px; left: -56px; top: -4px; }
+.footer-logo { display: block; flex: 0 0 auto; }
+.footer-logo img { height: 66px; width: auto; max-width: none; }
 .site-footer p { font-size: .66rem; line-height: 1.7; letter-spacing: .1em; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 15px; }
 .site-footer nav a, .site-footer > small { font-size: .52rem; letter-spacing: .1em; color: #b7c1ba; }
@@ -860,8 +840,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   .menu-button { display: block; }
   .desktop-nav { display: none; }
   .brand { justify-self: center; }
-  .brand-logo-crop { width: 72px; height: 72px; }
-  .brand-logo-crop img { width: 140px; left: -63px; top: -4px; }
+  .brand-logo { height: 58px; }
   .header-cart { justify-self: end; }
   .hero { min-height: 650px; height: calc(100svh - var(--header-height)); }
   .hero-shade { background: linear-gradient(0deg, rgba(19,35,24,.78), rgba(19,35,24,.05) 70%); }
@@ -894,8 +873,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 
 @media (max-width: 700px) {
   .section-wrap { width: min(100% - 30px, 600px); }
-  .brand strong { font-size: .72rem; letter-spacing: .07em; }
-  .brand small { font-size: .46rem; }
+  .brand-logo { height: 46px; }
   .trust-strip { grid-template-columns: 1fr; padding: 12px 20px; }
   .trust-strip > div { justify-content: flex-start; border-right: 0; border-bottom: 1px solid var(--line); padding: 15px; }
   .trust-strip > div:last-child { border-bottom: 0; }

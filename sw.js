@@ -10,7 +10,7 @@ const APP_SHELL = [
   "./styles.css",
   "./app.js",
   "./manifest.webmanifest",
-  "./assets/logo-sole-terra-acqua.webp",
+  "./assets/logo-completo.webp",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./assets/apple-touch-icon.png",
