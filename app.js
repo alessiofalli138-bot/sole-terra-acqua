@@ -440,6 +440,7 @@ function navigate(view, anchor) {
     else window.scrollTo({ top: 0, behavior: "smooth" });
   });
   if (view === "dashboard" && showDashboardGate()) renderDashboard();
+  aggiornaCassettaFluttuante();
   if (view === "builder") {
     requestAnimationFrame(() => dropCrates());
   }
@@ -465,6 +466,33 @@ function applyCrateVisual(crate) {
   if (img && !img.src.endsWith(image)) img.src = image;
 }
 
+// Sul telefono, scendendo tra i prodotti, la cassetta resta visibile in alto in piccolo.
+// Il segnaposto tiene lo spazio della cassetta grande, cosi' la pagina non salta.
+function aggiornaCassettaFluttuante() {
+  const slot = $(".live-crate-slot");
+  const card = $(".live-crate-card");
+  const sezione = slot?.closest(".order-step");
+  if (!slot || !card || !sezione) return;
+  const giaFluttua = card.classList.contains("fluttuante");
+  const inVista = state.view === "builder" && sezione.classList.contains("active")
+    && getComputedStyle(card).display !== "none";
+  let fluttua = false;
+  if (inVista) {
+    const posto = slot.getBoundingClientRect();
+    const fineSezione = sezione.getBoundingClientRect().bottom;
+    fluttua = posto.bottom < 170 && fineSezione > 320;
+  }
+  if (fluttua === giaFluttua) return;
+  if (fluttua) {
+    slot.style.height = `${slot.offsetHeight}px`;
+    card.style.setProperty("--larghezza-cassetta", `${$(".crate-visual", card).offsetWidth}px`);
+    card.classList.add("fluttuante");
+  } else {
+    card.classList.remove("fluttuante");
+    slot.style.height = "";
+  }
+}
+
 function goToStep(step) {
   if (step > 2 && quotaCount() < boxData().min) {
     showToast(`Scegli almeno ${boxData().min} prodotti per continuare.`);
@@ -478,6 +506,7 @@ function goToStep(step) {
   });
   $("#orderSuccess").classList.remove("active");
   updateSummary();
+  aggiornaCassettaFluttuante();
   window.scrollTo({ top: Math.max(0, $("#builderView").offsetTop), behavior: "smooth" });
 }
 
@@ -772,7 +801,7 @@ function buildWhatsAppUrl(orderInput, discoverySource) {
     productLines,
     notes ? `Note: ${notes}` : "",
     `Totale indicativo: ${money(order?.total || total())}`,
-    `Ci ha conosciuto tramite: ${discoverySource}`,
+    `Mi ha conosciuto tramite: ${discoverySource}`,
     importUrl ? "" : "",
     importUrl ? "Importa:" : "",
     importUrl
@@ -816,7 +845,7 @@ function confirmOrder() {
 
   $$(".order-step").forEach(el => el.classList.remove("active"));
   $("#orderSuccess").classList.add("active");
-  $("#successCopy").innerHTML = `Grazie <strong>${escapeHtml(order.name.split(" ")[0])}</strong>. L'ordine <strong>#${orderId}</strong> è confermato: arriverà ${formatDate(state.orderData.date).toLowerCase()} tra le <strong>${escapeHtml(state.selectedTime)}</strong>. Si apre WhatsApp solo per inviare il riepilogo all'azienda: non devi attendere risposta. <br><a class="whatsapp-inline" href="${whatsappUrl}" target="_blank" rel="noopener">INVIA RIEPILOGO WHATSAPP</a>`;
+  $("#successCopy").innerHTML = `Grazie <strong>${escapeHtml(order.name.split(" ")[0])}</strong>. L'ordine <strong>#${orderId}</strong> è confermato: arriverà ${formatDate(state.orderData.date).toLowerCase()} tra le <strong>${escapeHtml(state.selectedTime)}</strong>. Si apre WhatsApp solo per mandarmi il riepilogo: non devi attendere risposta. <br><a class="whatsapp-inline" href="${whatsappUrl}" target="_blank" rel="noopener">INVIA RIEPILOGO WHATSAPP</a>`;
   showToast("Ordine confermato!");
   updateSummary();
 }
@@ -1045,7 +1074,7 @@ function buildCustomerNotificationUrl(order, customer) {
       conserve.forEach(item => righe.push(`- ${item.name}`));
       righe.push("", "Rispondi con quella che preferisci e te la porto alla prossima consegna.");
     } else {
-      righe.push("", "Rispondi a questo messaggio e ci mettiamo d'accordo sulla conserva che preferisci.");
+      righe.push("", "Rispondi a questo messaggio e dimmi quale conserva preferisci.");
     }
   } else {
     const quante = missingPoints === 1 ? "ancora una consegna" : `ancora ${missingPoints} consegne`;
@@ -1245,6 +1274,13 @@ function optimizeRoutes() {
 }
 
 function setupEvents() {
+  let fluttuaInCoda = false;
+  window.addEventListener("scroll", () => {
+    if (fluttuaInCoda) return;
+    fluttuaInCoda = true;
+    requestAnimationFrame(() => { fluttuaInCoda = false; aggiornaCassettaFluttuante(); });
+  }, { passive: true });
+  window.addEventListener("resize", aggiornaCassettaFluttuante);
   $("#menuButton").addEventListener("click", () => openMenu(true));
   $("#closeMenu").addEventListener("click", () => openMenu(false));
   $("#menuBackdrop").addEventListener("click", () => openMenu(false));
