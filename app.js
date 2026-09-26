@@ -75,14 +75,14 @@ const CRATE_SLOTS = [
   { left: 31, top: 55, w: 36, h: 41, r: 7 },
   { left: 48, top: 53, w: 37, h: 42, r: -8 },
   { left: 65, top: 55, w: 36, h: 41, r: 6 },
-  { left: 38, top: 66, w: 35, h: 40, r: -5 },
-  { left: 56, top: 66, w: 36, h: 41, r: 9 },
-  { left: 73, top: 65, w: 34, h: 39, r: -9 },
+  { left: 39, top: 49, w: 35, h: 40, r: -5 },
+  { left: 57, top: 48, w: 36, h: 41, r: 9 },
+  { left: 74, top: 50, w: 34, h: 39, r: -9 },
   { left: 50, top: 29, w: 34, h: 39, r: -3 },
   { left: 63, top: 31, w: 33, h: 38, r: 7 },
   { left: 35, top: 34, w: 33, h: 38, r: -8 },
-  { left: 45, top: 73, w: 34, h: 39, r: 5 },
-  { left: 61, top: 75, w: 34, h: 39, r: -6 },
+  { left: 44, top: 45, w: 34, h: 39, r: 5 },
+  { left: 63, top: 44, w: 34, h: 39, r: -6 },
   { left: 52, top: 46, w: 38, h: 43, r: 3 }
 ];
 
@@ -576,6 +576,55 @@ function updateSummaryLegacy() {
   });
 }
 
+function crateItemStyle(item, index, selected) {
+  const slot = CRATE_SLOTS[index % CRATE_SLOTS.length];
+  const sameBefore = selected.slice(0, index).filter(previous => previous.id === item.id).length;
+  const duplicateShift = sameBefore % 3;
+  const left = slot.left + [0, 5, -5][duplicateShift];
+  const top = slot.top + [0, -4, 4][duplicateShift];
+  const rotation = slot.r + [0, 13, -13][duplicateShift];
+  const densityScale = selected.length === 1 ? 1.24 : selected.length === 2 ? 1.12 : 1;
+  const boxScale = state.box === "piccola" ? .82 : state.box === "grande" ? 1.15 : 1;
+  const finalScale = (densityScale * boxScale).toFixed(2);
+  return `${vectorCustomProperties(item)};--left:${left}%;--top:${top}%;--w:${slot.w}%;--h:${slot.h}%;--r:${rotation}deg;--z:${10 + index};--s:${finalScale}`;
+}
+
+// Aggiorna le verdure dentro la cassetta tenendo quelle gia' presenti:
+// cade solo quella appena aggiunta, le altre scivolano al nuovo posto.
+function renderCrateItems(container, selected) {
+  if (!container) return;
+  if (!selected.length) {
+    container.innerHTML = `<span class="empty-crate">LA CASSETTA È VUOTA<br>AGGIUNGI IL PRIMO PRODOTTO</span>`;
+    return;
+  }
+  container.querySelector(".empty-crate")?.remove();
+
+  const presenti = new Map($$(".crate-item", container).map(el => [el.dataset.key, el]));
+  const occorrenze = {};
+  let nuove = 0;
+  selected.forEach((item, index) => {
+    occorrenze[item.id] = (occorrenze[item.id] || 0) + 1;
+    const key = `${item.id}#${occorrenze[item.id]}`;
+    let el = presenti.get(key);
+    const stile = crateItemStyle(item, index, selected);
+    if (el) {
+      presenti.delete(key);
+      el.style.cssText = stile + (el.classList.contains("in-arrivo") ? `;--ritardo:${el.style.getPropertyValue("--ritardo") || "0ms"}` : "");
+      return;
+    }
+    el = document.createElement("span");
+    el.className = "crate-item in-arrivo";
+    el.dataset.key = key;
+    el.title = item.name;
+    el.setAttribute("aria-label", item.name);
+    el.style.cssText = `${stile};--ritardo:${nuove * 110}ms`;
+    el.addEventListener("animationend", () => el.classList.remove("in-arrivo"), { once: true });
+    container.appendChild(el);
+    nuove += 1;
+  });
+  presenti.forEach(el => el.remove());
+}
+
 function updateSummary() {
   const count = quotaCount();
   const box = boxData();
@@ -607,24 +656,8 @@ function updateSummary() {
   }).join("");
 
   const selected = state.selectionOrder.map(id => PRODUCTS.find(product => product.id === id));
-  const crateContent = selected.length
-    ? selected.map((item, index) => {
-        const slots = CRATE_SLOTS;
-        const slot = slots[index % slots.length];
-        const sameBefore = selected.slice(0, index).filter(previous => previous.id === item.id).length;
-        const duplicateShift = sameBefore % 3;
-        const left = slot.left + [0, 5, -5][duplicateShift];
-        const top = slot.top + [0, -4, 4][duplicateShift];
-        const rotation = slot.r + [0, 13, -13][duplicateShift];
-        const densityScale = selected.length === 1 ? 1.24 : selected.length === 2 ? 1.12 : 1;
-        const boxScale = state.box === "piccola" ? .82 : state.box === "grande" ? 1.15 : 1;
-        const finalScale = (densityScale * boxScale).toFixed(2);
-        const enterScale = (finalScale * .96).toFixed(2);
-        return `<span class="crate-item" style="${vectorCustomProperties(item)};--left:${left}%;--top:${top}%;--w:${slot.w}%;--h:${slot.h}%;--r:${rotation}deg;--z:${10 + index};--s:${finalScale};--enter-s:${enterScale};--delay:${160 + index * 45}ms" title="${item.name}" aria-label="${item.name}"></span>`;
-      }).join("")
-    : `<span class="empty-crate">LA CASSETTA È VUOTA<br>AGGIUNGI IL PRIMO PRODOTTO</span>`;
-  $("#crateItems").innerHTML = crateContent;
-  $("#liveCrateItems").innerHTML = crateContent;
+  renderCrateItems($("#crateItems"), selected);
+  renderCrateItems($("#liveCrateItems"), selected);
 
   ["summaryCrateVisual", "liveCrateVisual"].forEach(id => {
     const crate = $(`#${id}`);

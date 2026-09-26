@@ -387,6 +387,9 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   --crate-height: 280px;
   height: 320px;
 }
+.crate-visual.size-piccola::after { clip-path: inset(65% 0 0 0); }
+.crate-visual.size-media::after { clip-path: inset(51% 0 0 0); }
+.crate-visual.size-grande::after { clip-path: inset(51.5% 0 0 0); }
 .crate-visual.size-grande {
   --crate-image: url("assets/cassetta-grande-nuova.webp");
   --crate-width: 138%;
@@ -399,8 +402,8 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  background: var(--crate-image) center bottom / var(--crate-width) var(--crate-height) no-repeat;
-  clip-path: polygon(8% 58%, 91% 52%, 91% 87%, 11% 97%);
+  background: var(--crate-image) center bottom / min(var(--crate-width), 100%) var(--crate-height) no-repeat;
+  clip-path: inset(51% 0 0 0);
   mix-blend-mode: normal;
   transition: background-size .45s cubic-bezier(.2,.8,.2,1), height .45s ease;
 }
@@ -414,6 +417,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   transition: width .45s cubic-bezier(.2,.8,.2,1), height .45s cubic-bezier(.2,.8,.2,1);
 }
 .crate-drop .crate-picture,
+.crate-drop .crate-items,
 .crate-drop::after {
   animation: crateFallsIn .72s cubic-bezier(.16,.82,.22,1.04) both;
 }
@@ -455,11 +459,32 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--s));
   transform-origin: center;
   z-index: var(--z);
-  animation: veggieAppear .16s ease-out both;
+  transition: left .45s ease, top .45s ease, width .45s ease, height .45s ease, transform .45s ease;
 }
-@keyframes veggieAppear {
-  from { transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--enter-s)); opacity: 0; }
-  to { transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--s)); opacity: 1; }
+/* la verdura appena scelta cade dall'alto dentro la cassetta:
+   scende accelerando, si schiaccia un attimo sul fondo, rimbalza e si ferma */
+.crate-item.in-arrivo {
+  animation: verduraCade .56s var(--ritardo, 0ms) both;
+}
+@keyframes verduraCade {
+  0% {
+    transform: translate(-50%, -150%) rotate(calc(var(--r) - 14deg)) scale(var(--s));
+    opacity: 0;
+    animation-timing-function: cubic-bezier(.5, 0, .85, .4);
+  }
+  8% { opacity: 1; }
+  62% {
+    transform: translate(-50%, -44%) rotate(calc(var(--r) + 2deg)) scale(calc(var(--s) * 1.05), calc(var(--s) * .92));
+    animation-timing-function: cubic-bezier(.2, .7, .4, 1);
+  }
+  80% {
+    transform: translate(-50%, -54%) rotate(calc(var(--r) - 1deg)) scale(calc(var(--s) * .98), calc(var(--s) * 1.03));
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--r)) scale(var(--s));
+    opacity: 1;
+  }
 }
 .empty-crate {
   position: absolute;
@@ -956,5 +981,5 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
 }
