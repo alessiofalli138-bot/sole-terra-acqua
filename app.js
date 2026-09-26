@@ -484,7 +484,8 @@ function aggiornaCassettaFluttuante() {
   }
   if (fluttua === giaFluttua) return;
   if (fluttua) {
-    slot.style.height = `${slot.offsetHeight}px`;
+    // il margine sotto la cassetta sparisce quando diventa fissa: il segnaposto lo tiene
+    slot.style.height = `${card.offsetHeight + (parseFloat(getComputedStyle(card).marginBottom) || 0)}px`;
     card.style.setProperty("--larghezza-cassetta", `${$(".crate-visual", card).offsetWidth}px`);
     card.classList.add("fluttuante");
   } else {

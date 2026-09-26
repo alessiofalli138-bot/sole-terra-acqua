@@ -130,7 +130,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 
 .view { display: none; animation: viewIn .35s ease both; }
 .view.active { display: block; }
-@keyframes viewIn { from { opacity: 0; transform: translateY(5px); } }
+@keyframes viewIn { from { opacity: 0; } }
 
 .hero { height: min(760px, calc(100vh - var(--header-height))); min-height: 620px; position: relative; overflow: hidden; background: var(--green-deep); }
 .hero { border-radius: 0 0 32px 32px; }
