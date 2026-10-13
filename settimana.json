@@ -1,0 +1,244 @@
+{
+  "aggiornato": "",
+  "giorni": [],
+  "prodotti": [
+    {
+      "id": "peperoni",
+      "nome": "Peperoni",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "melanzane",
+      "nome": "Melanzane",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "pomodori",
+      "nome": "Pomodori",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "lattuga-romana",
+      "nome": "Lattuga romana",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "lattuga-canasta",
+      "nome": "Lattuga canasta",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "lattuga-gentilina",
+      "nome": "Lattuga gentilina",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "lattuga-iceberg",
+      "nome": "Lattuga iceberg",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cicoria",
+      "nome": "Cicoria",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "bieta-colorata",
+      "nome": "Bieta colorata",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "bieta-verde",
+      "nome": "Bieta verde",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cocomero",
+      "nome": "Cocomero",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "melone",
+      "nome": "Melone",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "broccolo-romanesco",
+      "nome": "Broccolo romanesco",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "broccolo-siciliano",
+      "nome": "Broccolo siciliano",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cavolfiore",
+      "nome": "Cavolfiore",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cavolo-cappuccio",
+      "nome": "Cavolo cappuccio",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cavolo-cappuccio-viola",
+      "nome": "Cavolo cappuccio viola",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "verza",
+      "nome": "Verza",
+      "peso": "1 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cipolle-tropea",
+      "nome": "Cipolle di Tropea",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cipolle-bianche",
+      "nome": "Cipolle bianche",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "aglio",
+      "nome": "Mazzo di aglio",
+      "peso": "1 mazzo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "odori-misti",
+      "nome": "Odori misti",
+      "peso": "1 mazzo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "zucca",
+      "nome": "Zucca",
+      "peso": "1 kg",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "carciofi",
+      "nome": "Carciofi",
+      "peso": "3 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "asparagi",
+      "nome": "Asparagi",
+      "peso": "1 mazzo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "patate",
+      "nome": "Patate",
+      "peso": "1 kg",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "zucchine-romanesche",
+      "nome": "Zucchine romanesche",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cetrioli",
+      "nome": "Cetrioli",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "fiori-zucca",
+      "nome": "Fiori di zucca",
+      "peso": "10 pz",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "peperoncini",
+      "nome": "Peperoncini",
+      "peso": "200 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "scarola-riccia",
+      "nome": "Scarola riccia",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "scarola-liscia",
+      "nome": "Scarola liscia",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "cavolo-nero",
+      "nome": "Cavolo nero",
+      "peso": "1 mazzo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "friggitelli",
+      "nome": "Peperoni friggitelli",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = "sole-terra-acqua-v19";
+const CACHE_NAME = "sole-terra-acqua-v20";
 
 // Solo l'essenziale per far comparire il sito subito, anche senza rete.
 // Tutto il resto (foto della galleria, immagini del catalogo) viene messo in
@@ -34,6 +34,10 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+  // la settimana (giorni e verdure) deve arrivare sempre fresca dal sito, e le chiamate
+  // a GitHub della dashboard non vanno mai in cache: le lascio passare dirette
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin || url.pathname.endsWith("/settimana.json")) return;
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

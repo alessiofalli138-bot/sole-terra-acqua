@@ -10,6 +10,16 @@ const ORDERS_STORAGE_KEY = "sole-terra-acqua-orders";
 const CUSTOMERS_STORAGE_KEY = "sole-terra-acqua-customers";
 const POINTS_FOR_REWARD = 10;
 const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
+// La settimana (giorni di consegna e verdure) sta in settimana.json, pubblicato sul sito:
+// e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
+const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
+const SETTIMANA_FILE = "settimana.json";
+const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
+const CHIAVE_GITHUB_KEY = "sole-terra-acqua-chiave-pubblicazione";
+const FASCE_ORARIE = [
+  ["14:30", "15:10"], ["15:10", "15:50"], ["15:50", "16:30"], ["16:30", "17:10"],
+  ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:10"], ["19:10", "19:50"]
+];
 const DEFAULT_PRESERVES = [
   { id: "passata", name: "Passata di pomodoro", enabled: true },
   { id: "melanzane-olio", name: "Melanzane sott'olio", enabled: true },
@@ -363,12 +373,12 @@ function vectorCustomProperties(product) {
   return `--vector-sheet:url('${product.sheet}');--vector-size:${vector.size};--vector-position:${vector.position}`;
 }
 
-function showToast(message) {
+function showToast(message, durata = 2600) {
   const toast = $("#toast");
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), durata);
 }
 
 function openMenu(open) {
@@ -722,37 +732,31 @@ function updateSummary() {
   sincronizzaCassetta3D();
 }
 
-function getDefaultDeliveryDays() {
-  const start = new Date();
-  const nextSaturday = new Date(start);
-  const daysUntilSaturday = (6 - start.getDay() + 7) % 7;
-  nextSaturday.setDate(start.getDate() + daysUntilSaturday);
-  return Array.from({ length: 3 }, (_, index) => {
-    const date = new Date(nextSaturday);
-    date.setDate(nextSaturday.getDate() + index * 7);
-    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 10);
-  });
+function oggiLocale() {
+  const adesso = new Date();
+  return new Date(adesso.getTime() - adesso.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
+// si ordina fino al giorno prima della consegna
+function giorniPrenotabili() {
+  const oggi = oggiLocale();
+  return state.deliveryDays.filter(giorno => giorno > oggi);
 }
 
 function setupDatesAndTimes() {
-  if (!state.deliveryDays.length) state.deliveryDays = getDefaultDeliveryDays();
-  const dates = state.deliveryDays.map(value => new Date(`${value}T12:00:00`));
-  if (!state.deliveryDays.includes(state.selectedDate)) state.selectedDate = state.deliveryDays[0];
-  $("#dateChoices").innerHTML = dates.map((date, index) => {
-    const value = state.deliveryDays[index];
-    const day = date.toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" }).toUpperCase();
-    return `<label><input type="radio" name="deliveryDate" value="${value}" ${index === 0 ? "checked" : ""}><span>${day}<small>${index === 0 ? "PROSSIMA CONSEGNA" : "DISPONIBILE"}</small></span></label>`;
-  }).join("");
+  const giorni = giorniPrenotabili();
+  if (!giorni.includes(state.selectedDate)) state.selectedDate = giorni[0] || "";
+  $("#dateChoices").innerHTML = giorni.length
+    ? giorni.map((value, index) => {
+      const day = new Date(`${value}T12:00:00`).toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" }).toUpperCase();
+      return `<label><input type="radio" name="deliveryDate" value="${value}" ${value === state.selectedDate ? "checked" : ""}><span>${day}<small>${index === 0 ? "PROSSIMA CONSEGNA" : "DISPONIBILE"}</small></span></label>`;
+    }).join("")
+    : `<p class="date-empty">Sto preparando il calendario delle prossime consegne. Torna a trovarmi tra poco, oppure scrivimi su WhatsApp.</p>`;
 
-  const slots = [
-    ["14:30", "15:10", 3], ["15:10", "15:50", 2], ["15:50", "16:30", 1], ["16:30", "17:10", 4],
-    ["17:10", "17:50", 2], ["17:50", "18:30", 3], ["18:30", "19:10", 1], ["19:10", "19:50", 2]
-  ];
-  $("#timeGrid").innerHTML = slots.map(([from, to, used], index) => `
+  $("#timeGrid").innerHTML = FASCE_ORARIE.map(([from, to]) => `
     <label>
-      <input type="radio" name="deliveryTime" value="${from}–${to}" ${used === 4 ? "disabled" : ""}>
-      <span>${from}–${to}<small>${used === 4 ? "COMPLETA" : `${4 - used} POSTI`}</small></span>
+      <input type="radio" name="deliveryTime" value="${from}–${to}" ${state.selectedTime === `${from}–${to}` ? "checked" : ""}>
+      <span>${from}–${to}<small>40 MINUTI</small></span>
     </label>
   `).join("");
 
@@ -765,6 +769,10 @@ function setupDatesAndTimes() {
 
 function validateDelivery() {
   const form = $("#deliveryForm");
+  if (!state.selectedDate) {
+    showToast("Al momento non ci sono consegne in calendario: scrivimi su WhatsApp.");
+    return false;
+  }
   let valid = true;
   $$("[required]", form).forEach(field => {
     const ok = field.value.trim() !== "";
@@ -901,23 +909,50 @@ function loadLocalOrder() {
   } catch (_) {}
 }
 
+// applica giorni e verdure letti da settimana.json (o dall'ultima copia salvata sul telefono)
+function applicaSettimana(dati) {
+  if (!dati || typeof dati !== "object") return false;
+  if (Array.isArray(dati.giorni)) {
+    state.deliveryDays = [...new Set(dati.giorni.filter(giorno => /^\d{4}-\d{2}-\d{2}$/.test(giorno)))].sort();
+  }
+  if (Array.isArray(dati.prodotti)) {
+    dati.prodotti.forEach(voce => {
+      const product = PRODUCTS.find(item => item.id === voce?.id);
+      if (!product) return;
+      if (typeof voce.nome === "string" && voce.nome.trim()) product.name = voce.nome.trim();
+      if (typeof voce.peso === "string" && voce.peso.trim()) product.weight = voce.peso.trim();
+      if (typeof voce.disponibile === "boolean") product.enabled = voce.disponibile;
+      // solo foto caricate dalla dashboard nella cartella del sito
+      product.customImage = /^assets\/prodotti\/[a-z0-9-]+\.(jpg|webp|png)$/.test(voce.foto || "") ? voce.foto : "";
+    });
+  }
+  state.settimanaPubblicata = typeof dati.aggiornato === "string" ? dati.aggiornato : "";
+  // dalla cassetta tolgo le verdure che questa settimana non ci sono
+  const attive = new Set(PRODUCTS.filter(product => product.enabled !== false).map(product => product.id));
+  state.selectionOrder = state.selectionOrder.filter(id => attive.has(id));
+  Object.keys(state.quantities).forEach(id => { state.quantities[id] = 0; });
+  state.selectionOrder.forEach(id => { state.quantities[id]++; });
+  return true;
+}
+
 function loadAdminSettings() {
+  try { applicaSettimana(JSON.parse(localStorage.getItem(SETTIMANA_COPIA_KEY))); } catch (_) {}
+}
+
+async function aggiornaSettimanaDalSito() {
   try {
-    const saved = JSON.parse(localStorage.getItem("sole-terra-acqua-week-settings"));
-    if (!saved) return;
-    if (Array.isArray(saved.deliveryDays) && saved.deliveryDays.length) {
-      state.deliveryDays = saved.deliveryDays;
-    }
-    if (Array.isArray(saved.products)) {
-      saved.products.forEach(savedProduct => {
-        const product = PRODUCTS.find(item => item.id === savedProduct.id);
-        if (!product) return;
-        if (typeof savedProduct.name === "string") product.name = savedProduct.name;
-        if (typeof savedProduct.weight === "string") product.weight = savedProduct.weight;
-        if (typeof savedProduct.enabled === "boolean") product.enabled = savedProduct.enabled;
-        if (typeof savedProduct.customImage === "string") product.customImage = savedProduct.customImage;
-      });
-    }
+    const risposta = await fetch(`${SETTIMANA_FILE}?v=${Date.now()}`, { cache: "no-store" });
+    if (!risposta.ok) return;
+    const testo = await risposta.text();
+    let copia = null;
+    try { copia = localStorage.getItem(SETTIMANA_COPIA_KEY); } catch (_) {}
+    if (testo === copia) return;
+    if (!applicaSettimana(JSON.parse(testo))) return;
+    try { localStorage.setItem(SETTIMANA_COPIA_KEY, testo); } catch (_) {}
+    renderProducts();
+    setupDatesAndTimes();
+    updateSummary();
+    renderWeekEditor();
   } catch (_) {}
 }
 
@@ -951,18 +986,76 @@ function renderWeekEditor() {
       </label>
     </div>
   `).join("");
+  aggiornaStatoPubblicazione();
 }
 
-function saveWeekSettings() {
-  const deliveryDays = $$("[data-delivery-day]")
-    .map(input => input.value)
-    .filter(Boolean)
-    .sort();
+function leggiChiave() {
+  try { return localStorage.getItem(CHIAVE_GITHUB_KEY) || ""; } catch (_) { return ""; }
+}
+
+function aggiornaStatoPubblicazione() {
+  const info = $("#pubblicaInfo");
+  if (!info) return;
+  const quando = state.settimanaPubblicata ? new Date(state.settimanaPubblicata) : null;
+  info.textContent = quando && !isNaN(quando)
+    ? `Ultima pubblicazione: ${quando.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} alle ${quando.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}.`
+    : "Settimana non ancora pubblicata.";
+  const chiave = leggiChiave();
+  $("#pubblicaChiave").hidden = Boolean(chiave);
+  $("#cambiaChiave").hidden = !chiave;
+}
+
+function base64Utf8(testo) {
+  const byte = new TextEncoder().encode(testo);
+  let binario = "";
+  for (let i = 0; i < byte.length; i += 0x8000) binario += String.fromCharCode(...byte.subarray(i, i + 0x8000));
+  return btoa(binario);
+}
+
+function erroreGitHub(stato) {
+  if (stato === 401) return Object.assign(new Error("La chiave non è valida o è scaduta: incollane una nuova."), { chiaveDaRifare: true });
+  if (stato === 403 || stato === 404) return new Error("La chiave non ha il permesso di scrivere sul sito.");
+  if (stato === 409 || stato === 422) return new Error("Il sito si stava già aggiornando: riprova tra qualche secondo.");
+  return new Error(`Pubblicazione non riuscita (errore ${stato}).`);
+}
+
+// crea o sostituisce un file del sito su GitHub; Pages lo mette online in un paio di minuti
+async function scriviSuGitHub(chiave, percorso, contenutoBase64, messaggio) {
+  const indirizzo = `https://api.github.com/repos/${SITO_REPO}/contents/${percorso}`;
+  const intestazioni = { Authorization: `Bearer ${chiave}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" };
+  let sha;
+  const esistente = await fetch(`${indirizzo}?ref=main&t=${Date.now()}`, { headers: intestazioni, cache: "no-store" });
+  if (esistente.ok) sha = (await esistente.json()).sha;
+  else if (esistente.status !== 404) throw erroreGitHub(esistente.status);
+  const risposta = await fetch(indirizzo, {
+    method: "PUT",
+    headers: intestazioni,
+    body: JSON.stringify({ message: messaggio, content: contenutoBase64, branch: "main", ...(sha ? { sha } : {}) })
+  });
+  if (!risposta.ok) throw erroreGitHub(risposta.status);
+}
+
+async function saveWeekSettings() {
+  // i giorni gia' passati non servono piu': non li ripubblico
+  const deliveryDays = [...new Set($$("[data-delivery-day]").map(input => input.value).filter(giorno => giorno && giorno >= oggiLocale()))].sort();
   if (!deliveryDays.length) {
-    showToast("Inserisci almeno un giorno di consegna.");
+    showToast("Inserisci almeno un giorno di consegna da oggi in avanti.");
     return;
   }
+  const campoChiave = $("#chiavePubblicazione");
+  if (campoChiave.value.trim()) {
+    try { localStorage.setItem(CHIAVE_GITHUB_KEY, campoChiave.value.trim()); } catch (_) {}
+    campoChiave.value = "";
+  }
   state.deliveryDays = deliveryDays;
+  const chiave = leggiChiave();
+  if (!chiave) {
+    aggiornaStatoPubblicazione();
+    campoChiave.classList.add("invalid");
+    campoChiave.focus();
+    showToast("Prima incolla la chiave di pubblicazione.");
+    return;
+  }
 
   PRODUCTS.forEach(product => {
     const nameInput = $(`[data-admin-name="${product.id}"]`);
@@ -973,19 +1066,35 @@ function saveWeekSettings() {
     product.enabled = Boolean(enabledInput?.checked);
   });
 
-  const enabledIds = new Set(PRODUCTS.filter(product => product.enabled !== false).map(product => product.id));
-  state.selectionOrder = state.selectionOrder.filter(id => enabledIds.has(id));
-  Object.keys(state.quantities).forEach(id => { state.quantities[id] = 0; });
-  state.selectionOrder.forEach(id => { state.quantities[id]++; });
-
+  const bottone = $("#saveWeekSettings");
+  const testoBottone = bottone.innerHTML;
+  bottone.disabled = true;
+  bottone.textContent = "PUBBLICO…";
   try {
-    localStorage.setItem("sole-terra-acqua-week-settings", JSON.stringify({
-      deliveryDays: state.deliveryDays,
-      products: PRODUCTS.map(({ id, name, weight, enabled, customImage }) => ({ id, name, weight, enabled, customImage: customImage || "" }))
-    }));
-    showToast("Settimana aggiornata e pubblicata.");
-  } catch (_) {
-    showToast("Immagini troppo grandi: prova con foto più leggere.");
+    for (const product of PRODUCTS) {
+      if (!product.customImage?.startsWith("data:")) continue;
+      const percorso = `assets/prodotti/${product.id}-${Date.now()}.jpg`;
+      await scriviSuGitHub(chiave, percorso, product.customImage.split(",")[1], `Foto: ${product.name}`);
+      product.customImage = percorso;
+    }
+    const dati = {
+      aggiornato: new Date().toISOString(),
+      giorni: deliveryDays,
+      prodotti: PRODUCTS.map(product => ({ id: product.id, nome: product.name, peso: product.weight, disponibile: product.enabled !== false, foto: product.customImage || "" }))
+    };
+    const testo = `${JSON.stringify(dati, null, 2)}\n`;
+    await scriviSuGitHub(chiave, SETTIMANA_FILE, base64Utf8(testo), "Settimana aggiornata dalla dashboard");
+    applicaSettimana(dati);
+    try { localStorage.setItem(SETTIMANA_COPIA_KEY, testo); } catch (_) {}
+    showToast("Pubblicata! Tra un paio di minuti la vedono tutti i clienti.", 5000);
+  } catch (errore) {
+    if (errore.chiaveDaRifare) {
+      try { localStorage.removeItem(CHIAVE_GITHUB_KEY); } catch (_) {}
+    }
+    showToast(errore instanceof TypeError ? "Niente connessione: riprova tra poco." : errore.message, 5000);
+  } finally {
+    bottone.disabled = false;
+    bottone.innerHTML = testoBottone;
   }
 
   setupDatesAndTimes();
@@ -997,7 +1106,7 @@ function saveWeekSettings() {
 function addDeliveryDay() {
   const lastDay = state.deliveryDays[state.deliveryDays.length - 1];
   const next = lastDay ? new Date(`${lastDay}T12:00:00`) : new Date();
-  next.setDate(next.getDate() + (lastDay ? 7 : 0));
+  next.setDate(next.getDate() + (lastDay ? 7 : 1));
   const local = new Date(next.getTime() - next.getTimezoneOffset() * 60000);
   state.deliveryDays.push(local.toISOString().slice(0, 10));
   renderWeekEditor();
@@ -1371,6 +1480,11 @@ function setupEvents() {
     if (button) removePreserve(Number(button.dataset.removePreserve));
   });
   $("#saveWeekSettings").addEventListener("click", saveWeekSettings);
+  $("#chiavePubblicazione").addEventListener("input", event => event.target.classList.remove("invalid"));
+  $("#cambiaChiave").addEventListener("click", () => {
+    $("#pubblicaChiave").hidden = false;
+    $("#chiavePubblicazione").focus();
+  });
   $("#addDeliveryDay").addEventListener("click", addDeliveryDay);
   $("#deliveryDaysEditor").addEventListener("click", event => {
     const button = event.target.closest("[data-remove-delivery-day]");
@@ -1576,7 +1690,6 @@ function init() {
   loadLocalOrder();
   loadAdminSettings();
   loadPreserves();
-  if (!state.deliveryDays.length) state.deliveryDays = getDefaultDeliveryDays();
   renderProducts();
   setupDatesAndTimes();
   setupEvents();
@@ -1589,6 +1702,7 @@ function init() {
   if (!importOrderFromHash()) openInitialRoute();
   showDashboardGate();
   registerServiceWorker();
+  aggiornaSettimanaDalSito();
 }
 
 init();

@@ -93,16 +93,16 @@
               <img src="assets/foto-consegne.webp" alt="Le cassette composte dai clienti, pronte per il giro di consegne" loading="lazy">
             </div>
             <div class="story-card">
-              <strong>2 lauree</strong>
-              <span>IN AMBITO<br>AGRARIO</span>
+              <strong>10 anni</strong>
+              <span>DI ESPERIENZA<br>NEL SETTORE</span>
             </div>
           </div>
           <div class="story-copy reveal">
             <p class="eyebrow">LA MIA STORIA</p>
             <h2>ANNI DI ESPERIENZA,<br>UN CAMPO,<br>UNA <em>PROMESSA.</em></h2>
             <p>
-              Prima del campo sono venuti gli studi: due lauree in ambito agrario e anni passati a capire
-              come funzionano davvero una pianta, un terreno, una stagione. All’università ho imparato
+              Prima di questo campo ci sono dieci anni di esperienza nel settore, passati a capire
+              come funzionano davvero una pianta, un terreno, una stagione. In questi anni ho imparato
               soprattutto una cosa, e non era una tecnica: che si può coltivare bene volendo bene alla
               terra, usando soltanto ciò che è compatibile con lei.
             </p>
@@ -466,6 +466,16 @@
             <button class="primary-button" id="saveWeekSettings">SALVA E PUBBLICA <span>→</span></button>
           </div>
 
+          <div class="pubblica-stato">
+            <p id="pubblicaInfo">Settimana non ancora pubblicata.</p>
+            <button type="button" class="pubblica-cambia" id="cambiaChiave" hidden>CAMBIA CHIAVE</button>
+            <div class="pubblica-chiave" id="pubblicaChiave">
+              <label for="chiavePubblicazione">CHIAVE DI PUBBLICAZIONE</label>
+              <input id="chiavePubblicazione" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Incolla qui la chiave di GitHub (github_pat_…)">
+              <small>Si inserisce una volta sola su questo dispositivo: serve a pubblicare la settimana sul sito.</small>
+            </div>
+          </div>
+
           <div class="week-manager-grid">
             <div class="delivery-editor">
               <div class="editor-title">
@@ -476,7 +486,7 @@
                 <button id="addDeliveryDay">+ AGGIUNGI GIORNO</button>
               </div>
               <div class="delivery-days-editor" id="deliveryDaysEditor"></div>
-              <p class="editor-note">Le fasce da 40 minuti restano attive dalle 14:30 alle 19:50, massimo 4 ordini per fascia.</p>
+              <p class="editor-note">I clienti vedono solo i giorni futuri e possono ordinare fino al giorno prima. Le fasce da 40 minuti vanno dalle 14:30 alle 19:50.</p>
             </div>
 
             <div class="products-editor">
