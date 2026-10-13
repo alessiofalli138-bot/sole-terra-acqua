@@ -1364,6 +1364,149 @@ function setupEvents() {
   });
 }
 
+// 3D leggero: le schede si inclinano verso il mouse; sul telefono verso il dito che preme.
+function setupInclinazione3D() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const SCHEDE = ".weekly-products article, .product-card, .box-option";
+  const conMouse = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const inclina = (scheda, evento, forza) => {
+    const r = scheda.getBoundingClientRect();
+    const x = Math.min(.5, Math.max(-.5, (evento.clientX - r.left) / r.width - .5));
+    const y = Math.min(.5, Math.max(-.5, (evento.clientY - r.top) / r.height - .5));
+    scheda.style.setProperty("--incl-x", `${(-y * forza).toFixed(2)}deg`);
+    scheda.style.setProperty("--incl-y", `${(x * forza).toFixed(2)}deg`);
+    scheda.style.setProperty("--luce-x", `${((x + .5) * 100).toFixed(1)}%`);
+    scheda.style.setProperty("--luce-y", `${((y + .5) * 100).toFixed(1)}%`);
+    scheda.classList.add("inclinata");
+  };
+  const raddrizza = scheda => scheda?.classList.remove("inclinata");
+  if (conMouse) {
+    let attuale = null;
+    document.addEventListener("pointermove", evento => {
+      const scheda = evento.target.closest?.(SCHEDE) || null;
+      if (attuale && attuale !== scheda) raddrizza(attuale);
+      attuale = scheda;
+      if (scheda) inclina(scheda, evento, 9);
+    }, { passive: true });
+    document.addEventListener("mouseout", evento => { if (!evento.relatedTarget) { raddrizza(attuale); attuale = null; } });
+  } else {
+    document.addEventListener("pointerdown", evento => {
+      const scheda = evento.target.closest?.(SCHEDE);
+      if (scheda) inclina(scheda, evento, 6);
+    }, { passive: true });
+    ["pointerup", "pointercancel"].forEach(tipo => document.addEventListener(tipo, () => $$(".inclinata").forEach(raddrizza), { passive: true }));
+  }
+}
+
+// 3D leggero: la galleria "Dal campo" diventa un anello di foto che si gira col dito o col mouse.
+function setupGalleria3D() {
+  const binario = $(".gallery-rail");
+  if (!binario || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const foto = $$("figure", binario);
+  const n = foto.length;
+  if (n < 3) return;
+  const anello = document.createElement("div");
+  anello.className = "anello";
+  foto.forEach(f => anello.appendChild(f));
+  binario.appendChild(anello);
+  binario.classList.add("anello-attivo");
+
+  const passo = 360 / n;
+  let angolo = 0, obiettivo = 0, velocita = 0, trascino = null, ultimoTocco = performance.now(), inVista = false, inCorsa = false;
+
+  const frecce = [["prec", "‹", 1, "Foto precedente"], ["succ", "›", -1, "Foto successiva"]].map(([classe, segno, verso, etichetta]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `anello-freccia ${classe}`;
+    b.textContent = segno;
+    b.setAttribute("aria-label", etichetta);
+    b.addEventListener("click", () => { obiettivo = Math.round(angolo / passo) * passo + verso * passo; velocita = 0; ultimoTocco = performance.now(); avvia(); });
+    binario.appendChild(b);
+    return b;
+  });
+
+  const disponi = () => {
+    const larghezza = foto[0].offsetWidth || 260;
+    const raggio = Math.round(larghezza / (2 * Math.tan(Math.PI / n)) * 1.16);
+    binario.style.setProperty("--raggio", `${raggio}px`);
+    foto.forEach((f, i) => f.style.setProperty("--angolo", `${i * passo}deg`));
+    anello.style.transform = `translateZ(${-raggio}px) rotateY(${angolo}deg)`;
+  };
+  const disegna = () => {
+    const raggio = parseFloat(binario.style.getPropertyValue("--raggio")) || 250;
+    anello.style.transform = `translateZ(${-raggio}px) rotateY(${angolo}deg)`;
+    foto.forEach((f, i) => {
+      const a = (((i * passo + angolo) % 360) + 540) % 360 - 180;   // 0 = davanti
+      const vicino = Math.cos(a * Math.PI / 180);
+      f.style.opacity = vicino > 0 ? (0.35 + 0.65 * vicino).toFixed(3) : "0";
+      f.classList.toggle("davanti", Math.abs(a) < passo / 2);
+    });
+  };
+  const passoAnimazione = ora => {
+    if (!trascino) {
+      if (Math.abs(velocita) > .05) {
+        angolo += velocita;
+        velocita *= .93;
+        obiettivo = Math.round(angolo / passo) * passo;
+      } else {
+        velocita = 0;
+        if (ora - ultimoTocco > 4200) { obiettivo -= passo; ultimoTocco = ora; }   // gira da sola, una foto alla volta
+        angolo += (obiettivo - angolo) * .085;
+      }
+    }
+    disegna();
+    if (inVista && !document.hidden) requestAnimationFrame(passoAnimazione);
+    else inCorsa = false;
+  };
+  const avvia = () => { if (!inCorsa && inVista) { inCorsa = true; requestAnimationFrame(passoAnimazione); } };
+
+  binario.addEventListener("pointerdown", evento => {
+    if (evento.target.closest(".anello-freccia")) return;
+    trascino = { x: evento.clientX, ultimo: evento.clientX, id: evento.pointerId, mosso: false };
+    velocita = 0;
+    ultimoTocco = performance.now();
+  });
+  binario.addEventListener("pointermove", evento => {
+    if (!trascino || evento.pointerId !== trascino.id) return;
+    const dx = evento.clientX - trascino.ultimo;
+    if (!trascino.mosso && Math.abs(evento.clientX - trascino.x) > 6) {
+      trascino.mosso = true;
+      binario.classList.add("trascino");
+      try { binario.setPointerCapture(evento.pointerId); } catch (_) {}
+    }
+    if (!trascino.mosso) return;
+    trascino.ultimo = evento.clientX;
+    angolo += dx * .32;
+    velocita = dx * .32;
+    ultimoTocco = performance.now();
+  });
+  const lascia = evento => {
+    if (!trascino) return;
+    if (!trascino.mosso) {   // un tocco su una foto laterale la porta davanti
+      const toccata = evento.target.closest?.("figure");
+      const i = foto.indexOf(toccata);
+      if (i >= 0) {
+        const a = (((i * passo + angolo) % 360) + 540) % 360 - 180;
+        obiettivo = Math.round((angolo - a) / passo) * passo;
+      }
+    }
+    trascino = null;
+    binario.classList.remove("trascino");
+    ultimoTocco = performance.now();
+  };
+  binario.addEventListener("pointerup", lascia);
+  binario.addEventListener("pointercancel", lascia);
+
+  new IntersectionObserver(voci => {
+    inVista = voci.some(v => v.isIntersecting);
+    if (inVista) avvia();
+  }).observe(binario);
+  document.addEventListener("visibilitychange", avvia);
+  window.addEventListener("resize", () => { disponi(); disegna(); });
+  requestAnimationFrame(() => { disponi(); disegna(); });
+  frecce.forEach(b => b.hidden = false);
+}
+
 function setupReveal() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -1400,6 +1543,8 @@ function init() {
   setupDatesAndTimes();
   setupEvents();
   setupReveal();
+  setupInclinazione3D();
+  setupGalleria3D();
   updateSummary();
   renderDashboard();
   if (!importOrderFromHash()) openInitialRoute();
