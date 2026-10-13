@@ -443,6 +443,7 @@ function navigate(view, anchor) {
   aggiornaCassettaFluttuante();
   if (view === "builder") {
     requestAnimationFrame(() => dropCrates());
+    setupCassetta3D();
   }
 }
 
@@ -655,6 +656,31 @@ function renderCrateItems(container, selected) {
   presenti.forEach(el => el.remove());
 }
 
+// Cassetta 3D: si carica quando entri nel compositore, se il dispositivo la regge.
+// Finche' non e' pronta (o se non parte) resta la cassetta 2D.
+let cassetta3D = null;
+let cassetta3DPartita = false;
+function setupCassetta3D() {
+  if (cassetta3DPartita) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || navigator.connection?.saveData) return;
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
+  cassetta3DPartita = true;
+  import("./cassetta3d.js")
+    .then(m => m.avviaCassetta3D({ contenitori: [$("#liveCrateVisual"), $("#summaryCrateVisual")], prodotti: PRODUCTS }))
+    .then(c => { cassetta3D = c; sincronizzaCassetta3D(); })
+    .catch(() => $$(".crate-visual").forEach(el => el.classList.remove("crate-3d")));
+}
+
+function sincronizzaCassetta3D() {
+  if (!cassetta3D) return;
+  const volte = {};
+  const selezione = state.selectionOrder.map(id => {
+    volte[id] = (volte[id] || 0) + 1;
+    return { chiave: `${id}#${volte[id]}`, id };
+  });
+  cassetta3D.sincronizza(selezione, state.box);
+}
+
 function updateSummary() {
   const count = quotaCount();
   const box = boxData();
@@ -693,6 +719,7 @@ function updateSummary() {
     const crate = $(`#${id}`);
     applyCrateVisual(crate);
   });
+  sincronizzaCassetta3D();
 }
 
 function getDefaultDeliveryDays() {
