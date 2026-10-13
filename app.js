@@ -24,9 +24,9 @@ const FASCE_ORARIE = [
 // se cambia un'etichetta, cambiare anche qui.
 const CONSERVE = [
   {
-    id: "salsa-pomodori", nome: "Salsa di pomodori misti", peso: "680 g", tinta: "#a3302a",
-    foto: "assets/conserva-salsa-pomodori.webp",
-    ingredienti: "Pomodori misti in quantità variabile 100%. Pomodoro italiano.",
+    id: "salsa-ciliegino", nome: "Salsa di pomodoro ciliegino", peso: "680 g", tinta: "#a3302a",
+    foto: "assets/conserva-salsa-ciliegino.webp",
+    ingredienti: "Pomodoro ciliegino 100%. Pomodoro italiano.",
     usi: [
       "Sugo in dieci minuti: aglio e olio in padella, la salsa, un pizzico di sale e una foglia di basilico.",
       "Base per pizza e focaccia, stesa a crudo prima di infornare.",
@@ -34,7 +34,7 @@ const CONSERVE = [
     ],
     buono: [
       "Licopene, il pigmento rosso del pomodoro: con la cottura e un filo d'olio il corpo lo assorbe meglio.",
-      "Tanta acqua e poche calorie: il pomodoro fresco ne ha circa 20 ogni 100 grammi.",
+      "Il ciliegino è dolce e saporito: tanta acqua e poche calorie, circa 20 ogni 100 grammi da fresco.",
       "Potassio e altri carotenoidi, come il betacarotene."
     ]
   },
