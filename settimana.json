@@ -240,5 +240,42 @@
       "disponibile": true,
       "foto": ""
     }
+  ],
+  "conserve": [
+    {
+      "id": "salsa-ciliegino",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "pesto-zucchine",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "crema-zucchine-semi",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "zucchine-capperi-olive",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "zucchine-aglio-prezzemolo",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "crema-zucca",
+      "prezzo": 0,
+      "disponibile": true
+    },
+    {
+      "id": "composta-zucca-zenzero",
+      "prezzo": 0,
+      "disponibile": true
+    }
   ]
 }

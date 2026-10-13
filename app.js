@@ -16,10 +16,23 @@ const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
 const CHIAVE_GITHUB_KEY = "sole-terra-acqua-chiave-pubblicazione";
+// Viterbo e Vitorchiano: fasce da 40 minuti. Zone vicine (+2,50 €): un'unica fascia la sera.
 const FASCE_ORARIE = [
   ["14:30", "15:10"], ["15:10", "15:50"], ["15:50", "16:30"], ["16:30", "17:10"],
-  ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:10"], ["19:10", "19:50"]
+  ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:10"]
 ];
+const FASCIA_ZONE_VICINE = [["19:00", "20:00"]];
+const LOCALITA = [
+  { nome: "Viterbo", costo: 0 },
+  { nome: "Vitorchiano", costo: 0 },
+  { nome: "Bagnaia", costo: 2.5 },
+  { nome: "Vetralla", costo: 2.5 },
+  { nome: "San Martino", costo: 2.5 },
+  { nome: "Tobia", costo: 2.5 },
+  { nome: "Quercia", costo: 2.5 }
+];
+// la cassetta composta (e le conserve) restano salvate sul telefono del cliente fino all'ordine
+const CARRELLO_KEY = "sole-terra-acqua-carrello";
 // Le conserve vere, dalle etichette. Ingredienti e pesi copiati dalle etichette:
 // se cambia un'etichetta, cambiare anche qui.
 const CONSERVE = [
@@ -130,6 +143,8 @@ const CONSERVE = [
   }
 ];
 
+CONSERVE.forEach(conserva => { conserva.prezzo = 0; conserva.disponibile = true; });
+
 const DEFAULT_PRESERVES = CONSERVE.map(conserva => ({ id: conserva.id, name: conserva.nome, enabled: true }));
 
 const PRODUCTS = [
@@ -220,6 +235,8 @@ const state = {
   deliveryFee: 0,
   selectedDate: "",
   selectedTime: "",
+  area: "",
+  conserve: {},
   orderData: {},
   orders: [...DEMO_ORDERS],
   customers: {},
@@ -234,7 +251,10 @@ const money = value => new Intl.NumberFormat("it-IT", { style: "currency", curre
 const quotaCount = () => Object.values(state.quantities).reduce((sum, value) => sum + value, 0);
 const boxData = () => BOXES[state.box];
 const extraCost = () => Math.max(0, quotaCount() - boxData().included) * 2;
-const total = () => boxData().price + extraCost() + state.deliveryFee;
+const conserveInVendita = () => CONSERVE.filter(conserva => conserva.disponibile !== false && conserva.prezzo > 0);
+const pezziConserve = () => Object.values(state.conserve).reduce((sum, value) => sum + value, 0);
+const costoConserve = () => CONSERVE.reduce((sum, conserva) => sum + (state.conserve[conserva.id] || 0) * conserva.prezzo, 0);
+const total = () => boxData().price + extraCost() + state.deliveryFee + costoConserve();
 
 function normalizePhone(value = "") {
   const digits = String(value).replace(/\D/g, "");
@@ -393,13 +413,14 @@ function compactOrderForLink(order) {
     order.area || "",
     order.box || "",
     Number(order.total || 0),
-    order.source || ""
+    order.source || "",
+    (order.conserve || []).map(item => `${item.quantita}× ${item.nome}`).join("; ")
   ];
 }
 
 function expandImportedOrder(data) {
   if (!Array.isArray(data)) return data;
-  const [id, date, time, deliveryWindow, name, phone, address, area, box, total, source] = data;
+  const [id, date, time, deliveryWindow, name, phone, address, area, box, total, source, conserve] = data;
   return {
     id,
     date,
@@ -414,7 +435,7 @@ function expandImportedOrder(data) {
     source,
     status: "Confermato",
     items: [],
-    notes: "",
+    notes: conserve ? `Conserve: ${conserve}` : "",
     loyaltyCredited: false
   };
 }
@@ -803,14 +824,17 @@ function updateSummary() {
   const missing = Math.max(0, box.min - count);
   const extraItems = Math.max(0, count - box.included);
 
-  $("#headerCartCount").textContent = count;
+  const pezzi = pezziConserve();
+  $("#headerCartCount").textContent = count + pezzi;
   $("#summaryBoxLabel").textContent = `${box.label} · ${box.price} €`;
   $("#summaryQuota").textContent = `${count} PRODOTTI · INCLUSI ${includedRange}`;
   $("#summaryExtras").textContent = money(extraCost());
   $("#summaryDelivery").textContent = state.selectedTime ? `${state.selectedTime}${state.deliveryFee ? ` · ${money(state.deliveryFee)}` : " · GRATIS"}` : "DA DEFINIRE";
   $("#summaryTotal").textContent = money(total());
   $("#mobileTotal").textContent = money(total());
-  $("#mobileQuota").textContent = `${count} prodotti`;
+  $("#mobileQuota").textContent = `${count} prodotti${pezzi ? ` + ${pezzi} ${pezzi === 1 ? "conserva" : "conserve"}` : ""}`;
+  $("#summaryConserveRiga").hidden = !pezzi;
+  $("#summaryConserve").textContent = `${pezzi} · ${money(costoConserve())}`;
   $("#quotaStatus").textContent = `${count} PRODOTTI SCELTI`;
   $("#quotaHint").textContent = missing
     ? `Scegli ancora ${missing} ${missing === 1 ? "prodotto" : "prodotti"} per completare la cassetta`
@@ -835,6 +859,84 @@ function updateSummary() {
     applyCrateVisual(crate);
   });
   sincronizzaCassetta3D();
+  salvaCarrello();
+}
+
+function salvaCarrello() {
+  try {
+    localStorage.setItem(CARRELLO_KEY, JSON.stringify({ box: state.box, prodotti: state.selectionOrder, conserve: state.conserve }));
+  } catch (_) {}
+}
+
+function ripristinaCarrello() {
+  let salvato = null;
+  try { salvato = JSON.parse(localStorage.getItem(CARRELLO_KEY)); } catch (_) {}
+  if (!salvato || typeof salvato !== "object") return;
+  if (BOXES[salvato.box]) state.box = salvato.box;
+  const attivi = new Set(PRODUCTS.filter(product => product.enabled !== false).map(product => product.id));
+  state.selectionOrder = (Array.isArray(salvato.prodotti) ? salvato.prodotti : []).filter(id => attivi.has(id));
+  Object.keys(state.quantities).forEach(id => { state.quantities[id] = 0; });
+  state.selectionOrder.forEach(id => { state.quantities[id]++; });
+  const vendibili = new Set(conserveInVendita().map(conserva => conserva.id));
+  state.conserve = {};
+  Object.entries(salvato.conserve || {}).forEach(([id, quante]) => {
+    if (vendibili.has(id) && quante > 0) state.conserve[id] = Math.min(20, Math.floor(quante));
+  });
+  $$(".box-option").forEach(el => el.classList.toggle("selected", el.dataset.box === state.box));
+}
+
+function svuotaCarrello() {
+  state.selectionOrder = [];
+  Object.keys(state.quantities).forEach(id => { state.quantities[id] = 0; });
+  state.conserve = {};
+  try { localStorage.removeItem(CARRELLO_KEY); } catch (_) {}
+  renderProducts();
+  renderConserve();
+  renderConserveCarrello();
+  updateSummary();
+}
+
+function conserveOrdinate() {
+  return CONSERVE
+    .filter(conserva => state.conserve[conserva.id] > 0)
+    .map(conserva => ({ id: conserva.id, nome: conserva.nome, peso: conserva.peso, quantita: state.conserve[conserva.id], prezzo: conserva.prezzo }));
+}
+
+function changeConserva(id, delta) {
+  const conserva = conserveInVendita().find(item => item.id === id);
+  if (!conserva) return;
+  const quante = Math.max(0, Math.min(20, (state.conserve[id] || 0) + delta));
+  if (quante) state.conserve[id] = quante;
+  else delete state.conserve[id];
+  renderConserve();
+  renderConserveCarrello();
+  updateSummary();
+  if (delta > 0) showToast(`${conserva.nome}: nel carrello.`);
+}
+
+// le conserve si aggiungono alla cassetta, in fondo alla scelta dei prodotti
+function renderConserveCarrello() {
+  const blocco = $("#conserveCarrello");
+  if (!blocco) return;
+  const inVendita = conserveInVendita();
+  blocco.hidden = !inVendita.length;
+  $("#conserveCarrelloGriglia").innerHTML = inVendita.map(conserva => {
+    const quante = state.conserve[conserva.id] || 0;
+    return `
+      <article class="conserva-card ${quante ? "selected" : ""}" style="--tinta:${conserva.tinta}">
+        <img src="${conserva.foto}" alt="" loading="lazy">
+        <div class="conserva-card-body">
+          <small>${conserva.peso.toUpperCase()} · ${money(conserva.prezzo)}</small>
+          <h4>${conserva.nome.toUpperCase()}</h4>
+          <div class="counter">
+            <button type="button" data-conserva-meno="${conserva.id}" ${quante ? "" : "disabled"} aria-label="Togli ${conserva.nome}">−</button>
+            <b>${quante}</b>
+            <button type="button" data-conserva-piu="${conserva.id}" aria-label="Aggiungi ${conserva.nome}">+</button>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 let conservaScelta = CONSERVE[0].id;
@@ -848,14 +950,29 @@ function renderConserve() {
     <button type="button" role="tab" aria-selected="${item.id === conserva.id}" data-conserva="${item.id}" style="--tinta:${item.tinta}">
       <img src="${item.foto}" alt="" loading="lazy">
       <span>${item.nome}</span>
+      ${item.disponibile !== false && item.prezzo > 0 ? `<small>${money(item.prezzo)}</small>` : ""}
     </button>
   `).join("");
-  const domanda = encodeURIComponent(`Ciao Alessio, vorrei informazioni sulla conserva "${conserva.nome}".`);
+  const inVendita = conserva.disponibile !== false && conserva.prezzo > 0;
+  const quante = state.conserve[conserva.id] || 0;
+  const whatsapp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Ciao Alessio, vorrei informazioni sulla conserva "${conserva.nome}".`)}`;
+  const azioni = !inVendita
+    ? `<a class="primary-button conserva-chiedi" href="${whatsapp}" target="_blank" rel="noopener">CHIEDIMELA SU WHATSAPP <span>→</span></a>`
+    : quante
+      ? `<div class="conserva-nel-carrello">
+          <div class="counter">
+            <button type="button" data-conserva-meno="${conserva.id}" aria-label="Togli ${conserva.nome}">−</button>
+            <b>${quante}</b>
+            <button type="button" data-conserva-piu="${conserva.id}" aria-label="Aggiungi ${conserva.nome}">+</button>
+          </div>
+          <button type="button" class="primary-button conserva-chiedi" data-vai-carrello>VAI AL CARRELLO <span>→</span></button>
+        </div>`
+      : `<button type="button" class="primary-button conserva-chiedi" data-conserva-piu="${conserva.id}">AGGIUNGI AL CARRELLO · ${money(conserva.prezzo)} <span>+</span></button>`;
   scheda.style.setProperty("--tinta", conserva.tinta);
   scheda.innerHTML = `
     <div class="conserva-foto"><img src="${conserva.foto}" alt="${conserva.nome}: illustrazione dell'etichetta" loading="lazy"></div>
     <div class="conserva-testo">
-      <p class="conserva-peso">VASETTO · ${conserva.peso.toUpperCase()}</p>
+      <p class="conserva-peso">VASETTO · ${conserva.peso.toUpperCase()}${inVendita ? ` · <b>${money(conserva.prezzo)}</b>` : ""}</p>
       <h3>${conserva.nome.toUpperCase()}</h3>
       <p class="conserva-ingredienti"><strong>INGREDIENTI</strong> ${conserva.ingredienti}</p>
       <div class="conserva-liste">
@@ -868,7 +985,8 @@ function renderConserve() {
           <ul>${conserva.buono.map(voce => `<li>${voce}</li>`).join("")}</ul>
         </div>
       </div>
-      <a class="primary-button conserva-chiedi" href="https://wa.me/${WHATSAPP_NUMBER}?text=${domanda}" target="_blank" rel="noopener">CHIEDIMELA SU WHATSAPP <span>→</span></a>
+      ${azioni}
+      ${inVendita ? `<p class="conserva-nota">Arriva insieme alla tua cassetta di verdure. Domande? <a href="${whatsapp}" target="_blank" rel="noopener">Scrivimi su WhatsApp</a></p>` : ""}
     </div>
   `;
 }
@@ -885,7 +1003,7 @@ function giorniPrenotabili() {
 }
 
 function aggiornaOrdiniAperti() {
-  const aperti = giorniPrenotabili().length > 0;
+  const aperti = giorniPrenotabili().length > 0 || !state.settimanaArrivata;
   $("#builderView").classList.toggle("chiuso", !aperti);
   $("#ordiniChiusi").hidden = aperti;
   return aperti;
@@ -902,12 +1020,26 @@ function setupDatesAndTimes() {
     }).join("")
     : `<p class="date-empty">Sto preparando il calendario delle prossime consegne. Torna a trovarmi tra poco, oppure scrivimi su WhatsApp.</p>`;
 
-  $("#timeGrid").innerHTML = FASCE_ORARIE.map(([from, to]) => `
+  $("#areaChoices").innerHTML = LOCALITA.map(localita => `
     <label>
-      <input type="radio" name="deliveryTime" value="${from}–${to}" ${state.selectedTime === `${from}–${to}` ? "checked" : ""}>
-      <span>${from}–${to}<small>40 MINUTI</small></span>
+      <input type="radio" name="area" value="${localita.nome}" ${state.area === localita.nome ? "checked" : ""}>
+      <span>${localita.nome.toUpperCase()}<small>${localita.costo ? `+${money(localita.costo)} · ORE 19–20` : "CONSEGNA GRATUITA"}</small></span>
     </label>
   `).join("");
+  const zona = LOCALITA.find(localita => localita.nome === state.area);
+  const fasce = !zona ? [] : zona.costo ? FASCIA_ZONE_VICINE : FASCE_ORARIE;
+  if (!fasce.some(([from, to]) => `${from}–${to}` === state.selectedTime)) {
+    // nelle zone vicine la fascia e' una sola: la scelgo io
+    state.selectedTime = fasce.length === 1 ? `${fasce[0][0]}–${fasce[0][1]}` : "";
+  }
+  $("#timeGrid").innerHTML = !zona
+    ? `<p class="date-empty">Prima scegli dove consegno: le fasce orarie dipendono dalla zona.</p>`
+    : fasce.map(([from, to]) => `
+      <label>
+        <input type="radio" name="deliveryTime" value="${from}–${to}" ${state.selectedTime === `${from}–${to}` ? "checked" : ""}>
+        <span>${from}–${to}<small>${zona.costo ? "ZONE VICINE" : "40 MINUTI"}</small></span>
+      </label>
+    `).join("");
 
   $$('input[name="deliveryDate"]').forEach(input => input.addEventListener("change", event => state.selectedDate = event.target.value));
   $$('input[name="deliveryTime"]').forEach(input => input.addEventListener("change", event => {
@@ -926,6 +1058,11 @@ function validateDelivery() {
   }
   if (state.selectedDate !== giornoScelto) {
     showToast("Il giorno che avevi scelto non è più disponibile: scegline un altro.");
+    return false;
+  }
+  if (!state.area) {
+    showToast("Prima dimmi dove consegno.");
+    $("#areaChoices").scrollIntoView({ behavior: "smooth", block: "center" });
     return false;
   }
   let valid = true;
@@ -954,9 +1091,11 @@ function renderCheckout() {
     <h3>IL TUO ORDINE</h3>
     <div class="checkout-products">
       ${selected.map(product => `<span>${product.emoji} ${state.quantities[product.id]}× ${product.name.toUpperCase()}</span>`).join("")}
+      ${conserveOrdinate().map(item => `<span>🫙 ${item.quantita}× ${item.nome.toUpperCase()}</span>`).join("")}
     </div>
     <div class="checkout-detail">
       <div><small>CASSETTA</small><strong>${boxData().label} · ${quotaCount()} PRODOTTI</strong></div>
+      ${pezziConserve() ? `<div><small>CONSERVE</small><strong>${pezziConserve()} ${pezziConserve() === 1 ? "VASETTO" : "VASETTI"} · ${money(costoConserve())}</strong></div>` : ""}
       <div><small>CONSEGNA</small><strong>${formatDate(state.orderData.date)}<br>${state.orderData.time}</strong></div>
       <div><small>CLIENTE</small><strong>${escapeHtml(state.orderData.fullName)}<br>${escapeHtml(state.orderData.phone)}</strong></div>
       <div><small>INDIRIZZO</small><strong>${escapeHtml(state.orderData.address)}<br>${escapeHtml(state.orderData.area)}</strong></div>
@@ -979,6 +1118,7 @@ function buildWhatsAppUrl(orderInput, discoverySource) {
   const productLines = order?.items?.length
     ? order.items.map(item => `- ${item.quantity} x ${item.name} (${item.weight})`).join("\n")
     : selectedProductLines().join("\n");
+  const conserve = order?.conserve || conserveOrdinate();
   const importUrl = order ? dashboardImportUrl(order) : "";
   const message = [
     `Nuovo ordine confermato dal sito: ${orderId}.`,
@@ -990,6 +1130,8 @@ function buildWhatsAppUrl(orderInput, discoverySource) {
     `Cassetta: ${order?.box || boxData().label} (${quotaCount()} prodotti)`,
     "Prodotti:",
     productLines,
+    conserve.length ? "Conserve:" : "",
+    conserve.map(item => `- ${item.quantita} x ${item.nome} (${item.peso}) ${money(item.quantita * item.prezzo)}`).join("\n"),
     notes ? `Note: ${notes}` : "",
     `Totale indicativo: ${money(order?.total || total())}`,
     `Mi ha conosciuto tramite: ${discoverySource}`,
@@ -1015,7 +1157,8 @@ function confirmOrder() {
     return;
   }
 
-  const orderId = `R${String(state.orders.length + 19).padStart(4, "0")}`;
+  // codice unico: prima ogni cliente al primo ordine riceveva lo stesso numero e in dashboard gli ordini si sovrapponevano
+  const orderId = `R${Date.now().toString(36).slice(-5).toUpperCase()}${Math.floor(Math.random() * 36).toString(36).toUpperCase()}`;
   const order = {
     id: orderId,
     time: state.selectedTime.split("–")[0],
@@ -1032,6 +1175,7 @@ function confirmOrder() {
   order.deliveryWindow = state.orderData.time;
   order.phone = state.orderData.phone;
   order.items = getOrderItems();
+  order.conserve = conserveOrdinate();
   order.notes = state.orderData.notes || "";
   order.loyaltyCredited = false;
   state.orders.unshift(order);
@@ -1044,7 +1188,7 @@ function confirmOrder() {
   $("#orderSuccess").classList.add("active");
   $("#successCopy").innerHTML = `Grazie <strong>${escapeHtml(order.name.split(" ")[0])}</strong>. L'ordine <strong>#${orderId}</strong> è confermato: arriverà ${formatDate(state.orderData.date).toLowerCase()} tra le <strong>${escapeHtml(state.selectedTime)}</strong>. Si apre WhatsApp solo per mandarmi il riepilogo: non devi attendere risposta. <br><a class="whatsapp-inline" href="${whatsappUrl}" target="_blank" rel="noopener">INVIA RIEPILOGO WHATSAPP</a>`;
   showToast("Ordine confermato!");
-  updateSummary();
+  svuotaCarrello();
 }
 
 function formatDate(value) {
@@ -1087,6 +1231,17 @@ function applicaSettimana(dati) {
       product.customImage = /^assets\/prodotti\/[a-z0-9-]+\.(jpg|webp|png)$/.test(voce.foto || "") ? voce.foto : "";
     });
   }
+  if (Array.isArray(dati.conserve)) {
+    dati.conserve.forEach(voce => {
+      const conserva = CONSERVE.find(item => item.id === voce?.id);
+      if (!conserva) return;
+      const prezzo = Number(voce.prezzo);
+      conserva.prezzo = Number.isFinite(prezzo) && prezzo > 0 ? Math.round(prezzo * 100) / 100 : 0;
+      if (typeof voce.disponibile === "boolean") conserva.disponibile = voce.disponibile;
+    });
+  }
+  const vendibili = new Set(conserveInVendita().map(conserva => conserva.id));
+  Object.keys(state.conserve).forEach(id => { if (!vendibili.has(id)) delete state.conserve[id]; });
   state.settimanaPubblicata = typeof dati.aggiornato === "string" ? dati.aggiornato : "";
   // dalla cassetta tolgo le verdure che questa settimana non ci sono
   const attive = new Set(PRODUCTS.filter(product => product.enabled !== false).map(product => product.id));
@@ -1097,13 +1252,13 @@ function applicaSettimana(dati) {
 }
 
 function loadAdminSettings() {
-  try { applicaSettimana(JSON.parse(localStorage.getItem(SETTIMANA_COPIA_KEY))); } catch (_) {}
+  try { state.settimanaArrivata = applicaSettimana(JSON.parse(localStorage.getItem(SETTIMANA_COPIA_KEY))); } catch (_) {}
 }
 
 async function aggiornaSettimanaDalSito() {
   try {
     const risposta = await fetch(`${SETTIMANA_FILE}?v=${Date.now()}`, { cache: "no-store" });
-    if (!risposta.ok) return;
+    if (!risposta.ok) throw new Error(risposta.status);
     const testo = await risposta.text();
     let copia = null;
     try { copia = localStorage.getItem(SETTIMANA_COPIA_KEY); } catch (_) {}
@@ -1111,10 +1266,19 @@ async function aggiornaSettimanaDalSito() {
     if (!applicaSettimana(JSON.parse(testo))) return;
     try { localStorage.setItem(SETTIMANA_COPIA_KEY, testo); } catch (_) {}
     renderProducts();
+    renderConserve();
+    renderConserveCarrello();
     setupDatesAndTimes();
     updateSummary();
     renderWeekEditor();
-  } catch (_) {}
+  } catch (_) {
+    // senza rete e senza copia salvata: da qui in poi conta quello che c'e'
+  } finally {
+    if (!state.settimanaArrivata) {
+      state.settimanaArrivata = true;
+      aggiornaOrdiniAperti();
+    }
+  }
 }
 
 function renderWeekEditor() {
@@ -1144,6 +1308,21 @@ function renderWeekEditor() {
       <input type="text" value="${escapeHtml(product.weight)}" data-admin-weight="${product.id}" aria-label="Peso ${escapeHtml(product.name)}">
       <label class="availability-toggle" title="Disponibile questa settimana">
         <input type="checkbox" data-admin-enabled="${product.id}" ${product.enabled !== false ? "checked" : ""}>
+        <span></span>
+      </label>
+    </div>
+  `).join("");
+
+  $("#conserveVenditaEditor").innerHTML = CONSERVE.map(conserva => `
+    <div class="admin-conserva-row">
+      <img src="${conserva.foto}" alt="">
+      <span>${conserva.nome}<small>${conserva.peso}</small></span>
+      <label class="prezzo-campo">
+        <input type="number" min="0" step="0.10" inputmode="decimal" value="${conserva.prezzo ? conserva.prezzo.toFixed(2) : ""}" placeholder="0,00" data-conserva-prezzo="${conserva.id}" aria-label="Prezzo ${escapeHtml(conserva.nome)}">
+        <b>€</b>
+      </label>
+      <label class="availability-toggle" title="In vendita">
+        <input type="checkbox" data-conserva-vendita="${conserva.id}" ${conserva.disponibile !== false ? "checked" : ""}>
         <span></span>
       </label>
     </div>
@@ -1233,6 +1412,12 @@ async function saveWeekSettings() {
     product.enabled = Boolean(enabledInput?.checked);
   });
 
+  CONSERVE.forEach(conserva => {
+    const prezzo = parseFloat(String($(`[data-conserva-prezzo="${conserva.id}"]`)?.value || "").replace(",", "."));
+    conserva.prezzo = Number.isFinite(prezzo) && prezzo > 0 ? Math.round(prezzo * 100) / 100 : 0;
+    conserva.disponibile = Boolean($(`[data-conserva-vendita="${conserva.id}"]`)?.checked);
+  });
+
   const bottone = $("#saveWeekSettings");
   const testoBottone = bottone.innerHTML;
   bottone.disabled = true;
@@ -1247,7 +1432,8 @@ async function saveWeekSettings() {
     const dati = {
       aggiornato: new Date().toISOString(),
       giorni: deliveryDays,
-      prodotti: PRODUCTS.map(product => ({ id: product.id, nome: product.name, peso: product.weight, disponibile: product.enabled !== false, foto: product.customImage || "" }))
+      prodotti: PRODUCTS.map(product => ({ id: product.id, nome: product.name, peso: product.weight, disponibile: product.enabled !== false, foto: product.customImage || "" })),
+      conserve: CONSERVE.map(conserva => ({ id: conserva.id, prezzo: conserva.prezzo, disponibile: conserva.disponibile !== false }))
     };
     const testo = `${JSON.stringify(dati, null, 2)}\n`;
     await scriviSuGitHub(chiave, SETTIMANA_FILE, base64Utf8(testo), "Settimana aggiornata dalla dashboard");
@@ -1266,6 +1452,8 @@ async function saveWeekSettings() {
 
   setupDatesAndTimes();
   renderProducts();
+  renderConserve();
+  renderConserveCarrello();
   updateSummary();
   renderWeekEditor();
 }
@@ -1610,10 +1798,24 @@ function setupEvents() {
     else showToast("Completa questo passaggio prima di continuare.");
   }));
   $$(".box-option").forEach(button => button.addEventListener("click", () => selectBox(button.dataset.box)));
-  $("#areaSelect").addEventListener("change", event => {
-    const option = event.target.selectedOptions[0];
-    state.deliveryFee = Number(option?.dataset.fee || 0);
+  $("#areaChoices").addEventListener("change", event => {
+    if (event.target.name !== "area") return;
+    const zona = LOCALITA.find(localita => localita.nome === event.target.value);
+    state.area = zona ? zona.nome : "";
+    state.deliveryFee = zona ? zona.costo : 0;
+    setupDatesAndTimes();
     updateSummary();
+  });
+  // + e − delle conserve: valgono sia nella scheda in home sia in fondo ai prodotti
+  document.addEventListener("click", event => {
+    const piu = event.target.closest("[data-conserva-piu]");
+    const meno = event.target.closest("[data-conserva-meno]");
+    if (piu) changeConserva(piu.dataset.conservaPiu, 1);
+    else if (meno) changeConserva(meno.dataset.conservaMeno, -1);
+    else if (event.target.closest("[data-vai-carrello]")) {
+      navigate("builder");
+      goToStep(quotaCount() ? 2 : 1);
+    }
   });
   $("#toReview").addEventListener("click", () => {
     if (validateDelivery()) {
@@ -1865,7 +2067,9 @@ function init() {
   loadLocalOrder();
   loadAdminSettings();
   loadPreserves();
+  ripristinaCarrello();
   renderConserve();
+  renderConserveCarrello();
   renderProducts();
   setupDatesAndTimes();
   setupEvents();

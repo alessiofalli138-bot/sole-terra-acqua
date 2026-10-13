@@ -297,6 +297,12 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .conserva-liste ol li::before { counter-increment: uso; content: counter(uso); position: absolute; left: 0; top: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--tinta); color: #fff; font-size: .66rem; font-weight: 900; display: grid; place-items: center; }
 .conserva-liste ul li::before { content: ""; position: absolute; left: 4px; top: 4px; width: 6px; height: 11px; border: solid var(--tinta); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .conserva-chiedi { background: var(--tinta); }
+.conserva-peso b { color: var(--ink); font-size: .9rem; letter-spacing: .02em; }
+.conserve-scelta small { color: var(--tinta); font-size: .72rem; font-weight: 900; }
+.conserva-nel-carrello { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.conserva-nel-carrello .counter { width: 140px; height: 46px; margin: 0; }
+.conserva-nota { margin: 14px 0 0; color: var(--muted); font-size: .8rem; }
+.conserva-nota a { color: var(--tinta); font-weight: 900; }
 .conserve-omaggio { margin: 22px 0 0; text-align: center; color: var(--muted); font-size: .9rem; }
 .conserve-omaggio strong { color: var(--terracotta); letter-spacing: .08em; font-size: .78rem; margin-right: 6px; }
 .weekly-products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 40px 0 44px; }
@@ -663,6 +669,20 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .quota-dots i { width: 13px; height: 13px; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; }
 .quota-dots i.filled { background: var(--peach); border-color: var(--peach); }
 .quota-dots i.extra { background: var(--butter); border-color: var(--butter); }
+/* Conserve da aggiungere alla cassetta (in fondo ai prodotti) */
+.conserve-carrello[hidden] { display: none; }
+.conserve-carrello { margin-top: 34px; padding: 22px; border-radius: var(--soft-radius); background: #fffdf7; border: 1px solid var(--line); }
+.conserve-carrello-head small { color: var(--terracotta); font-size: .7rem; letter-spacing: .14em; font-weight: 900; }
+.conserve-carrello-head h3 { margin: 6px 0 4px; font-size: 1.15rem; letter-spacing: .04em; }
+.conserve-carrello-head p { margin: 0 0 16px; color: var(--muted); font-size: .84rem; }
+.conserve-carrello-griglia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.conserva-card { display: grid; grid-template-columns: 104px 1fr; gap: 12px; align-items: center; padding: 10px; border-radius: var(--small-radius); background: var(--cream); border: 1px solid transparent; }
+.conserva-card.selected { border-color: var(--tinta); box-shadow: 0 0 0 1px var(--tinta) inset; }
+.conserva-card img { width: 104px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; background: #f5f0dd; }
+.conserva-card-body { display: grid; gap: 6px; min-width: 0; }
+.conserva-card-body small { color: var(--tinta); font-size: .68rem; letter-spacing: .08em; font-weight: 900; }
+.conserva-card-body h4 { margin: 0; font-size: .78rem; line-height: 1.25; letter-spacing: .04em; }
+.conserva-card .counter { max-width: 140px; }
 .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .product-card { min-width: 0; display: grid; grid-template-columns: 120px 1fr; background: var(--cream); border: 1px solid transparent; position: relative; transition: .2s; border-radius: var(--soft-radius); overflow: hidden; }
 .product-card.selected { border-color: var(--green); }
@@ -691,6 +711,12 @@ legend span { color: var(--muted); font-weight: 400; }
 .time-grid span small { font-size: .68rem; color: var(--muted); margin-top: 4px; font-weight: 400; }
 .time-grid input:checked + span small { color: #d4e1d6; }
 .time-grid input:disabled + span { opacity: .4; cursor: not-allowed; text-decoration: line-through; }
+/* Dove consegno: prima scelta del passo 3 */
+.choice-row.area-choices { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.area-choices span { min-height: 62px; padding: 8px 6px; text-align: center; }
+.area-choices span small { font-size: .66rem; letter-spacing: .04em; }
+.basket-lines [hidden] { display: none; }
+.choice-row input:checked + span small { color: #d4e1d6; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px; padding-top: 8px; }
 .form-grid label { display: grid; gap: 8px; }
 .form-grid label.wide { grid-column: 1 / -1; }
@@ -987,6 +1013,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 .delivery-day-row input { min-height: 42px; padding: 9px 11px; }
 .delivery-day-row button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: #f1dfd8; color: var(--terracotta); cursor: pointer; }
 .editor-note { color: var(--muted); font-size: .75rem; line-height: 1.55; margin: 17px 0 0; }
+.conserve-editor { grid-column: 1 / -1; border: 1px solid var(--line); padding: 20px; border-radius: var(--soft-radius); }
+.admin-conserva-row { display: grid; grid-template-columns: 70px 1fr 120px 70px; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); }
+.admin-conserva-row img { width: 70px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 9px; background: #f5f0dd; }
+.admin-conserva-row > span { font-size: .8rem; font-weight: 900; letter-spacing: .03em; }
+.admin-conserva-row > span small { display: block; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.prezzo-campo { position: relative; }
+.prezzo-campo input { min-height: 42px; padding: 9px 30px 9px 11px; }
+.prezzo-campo b { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: .8rem; }
 .admin-products-table { overflow-x: auto; }
 .admin-product-row { min-width: 610px; display: grid; grid-template-columns: 82px 1.2fr .8fr 90px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .admin-product-header { color: var(--muted); font-size: .68rem; letter-spacing: .1em; font-weight: 900; padding-top: 0; border-top: 0; }
@@ -1082,6 +1116,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 }
 
 @media (max-width: 700px) {
+  .choice-row.area-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .conserve-carrello { padding: 16px; }
+  .conserve-carrello-griglia { grid-template-columns: 1fr; }
+  .admin-conserva-row { grid-template-columns: 56px 1fr 96px 54px; gap: 8px; }
+  .admin-conserva-row img { width: 56px; }
   .hero-conserve { margin-top: 16px; padding: 9px 16px 9px 9px; gap: 11px; max-width: 100%; }
   .hero-conserve-vasetti img { width: 44px; height: 44px; }
   .hero-conserve-vasetti img + img { margin-left: -14px; }

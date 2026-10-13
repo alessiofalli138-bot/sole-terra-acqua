@@ -311,6 +311,14 @@
               </div>
               </div>
               <div class="product-grid" id="productGrid"></div>
+              <div class="conserve-carrello" id="conserveCarrello" hidden>
+                <div class="conserve-carrello-head">
+                  <small>DAL CAMPO AL VASETTO</small>
+                  <h3>AGGIUNGI LE MIE CONSERVE</h3>
+                  <p>Arrivano insieme alla cassetta, nella stessa consegna.</p>
+                </div>
+                <div class="conserve-carrello-griglia" id="conserveCarrelloGriglia"></div>
+              </div>
               <div class="step-actions">
                 <button class="back-button" data-prev-step>← INDIETRO</button>
                 <button class="primary-button" id="toDelivery" data-next-step disabled>SCELGO LA CONSEGNA <span>→</span></button>
@@ -322,10 +330,14 @@
                 <span>03</span>
                 <div>
                   <h2>DOVE E QUANDO?</h2>
-                  <p>Scegli una fascia da 40 minuti. Accetto al massimo 4 consegne per fascia, così arrivo puntuale.</p>
+                  <p>Prima dimmi dove consegno. A Viterbo e Vitorchiano scegli una fascia da 40 minuti; nelle zone vicine passo dalle 19:00 alle 20:00, con 2,50 € di consegna.</p>
                 </div>
               </div>
               <form id="deliveryForm" novalidate>
+                <fieldset>
+                  <legend>DOVE CONSEGNO?</legend>
+                  <div class="choice-row area-choices" id="areaChoices"></div>
+                </fieldset>
                 <fieldset>
                   <legend>GIORNO DI CONSEGNA</legend>
                   <div class="choice-row date-choices" id="dateChoices"></div>
@@ -346,19 +358,6 @@
                   <label class="wide">
                     <span>VIA E NUMERO CIVICO *</span>
                     <input name="address" autocomplete="street-address" placeholder="Es. Via della Quercia, 24" required>
-                  </label>
-                  <label>
-                    <span>LOCALITÀ *</span>
-                    <select name="area" id="areaSelect" required>
-                      <option value="">Scegli la località</option>
-                      <option value="Viterbo" data-fee="0">Viterbo · consegna gratuita</option>
-                      <option value="Vitorchiano" data-fee="0">Vitorchiano · consegna gratuita</option>
-                      <option value="Vetralla" data-fee="2.5">Vetralla · +2,50 €</option>
-                      <option value="San Martino" data-fee="2.5">San Martino · +2,50 €</option>
-                      <option value="Bagnaia" data-fee="2.5">Bagnaia · +2,50 €</option>
-                      <option value="Tobia" data-fee="2.5">Tobia · +2,50 €</option>
-                      <option value="Quercia" data-fee="2.5">Quercia · +2,50 €</option>
-                    </select>
                   </label>
                   <label class="wide">
                     <span>RICHIESTE IN PIÙ</span>
@@ -438,6 +437,7 @@
             <div class="basket-lines">
               <div><span>PRODOTTI</span><strong id="summaryQuota">0 PRODOTTI · INCLUSI 4-6</strong></div>
               <div><span>EXTRA PRODOTTI</span><strong id="summaryExtras">0,00 €</strong></div>
+              <div id="summaryConserveRiga" hidden><span>CONSERVE</span><strong id="summaryConserve">0</strong></div>
               <div><span>CONSEGNA</span><strong id="summaryDelivery">DA DEFINIRE</strong></div>
             </div>
             <div class="basket-total">
@@ -519,7 +519,7 @@
                 <button id="addDeliveryDay">+ AGGIUNGI GIORNO</button>
               </div>
               <div class="delivery-days-editor" id="deliveryDaysEditor"></div>
-              <p class="editor-note">I clienti vedono solo i giorni futuri e possono ordinare fino al giorno prima. Le fasce da 40 minuti vanno dalle 14:30 alle 19:50.</p>
+              <p class="editor-note">I clienti vedono solo i giorni futuri e possono ordinare fino al giorno prima. Viterbo e Vitorchiano: fasce da 40 minuti dalle 14:30 alle 19:10. Zone vicine (+2,50 €): dalle 19:00 alle 20:00.</p>
             </div>
 
             <div class="products-editor">
@@ -536,6 +536,18 @@
                 </div>
                 <div id="weeklyProductsEditor"></div>
               </div>
+            </div>
+
+            <div class="conserve-editor">
+              <div class="editor-title">
+                <div>
+                  <small>NEGOZIO</small>
+                  <h3>CONSERVE IN VENDITA</h3>
+                </div>
+                <span>PREZZO · IN VENDITA</span>
+              </div>
+              <div id="conserveVenditaEditor"></div>
+              <p class="editor-note">Una conserva compare in vendita solo se ha un prezzo e l'interruttore è acceso. Si pubblica insieme alla settimana.</p>
             </div>
           </div>
         </section>
