@@ -1507,6 +1507,17 @@ function setupGalleria3D() {
   frecce.forEach(b => b.hidden = false);
 }
 
+// Campo 3D in apertura: si carica a pagina pronta, solo se il telefono lo regge.
+function setupCampo3D() {
+  const hero = $(".hero");
+  if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (navigator.connection?.saveData) return;
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
+  const parti = () => import("./campo3d.js").then(m => m.avviaCampo3D(hero)).catch(() => {});
+  if ("requestIdleCallback" in window) requestIdleCallback(parti, { timeout: 1500 });
+  else setTimeout(parti, 700);
+}
+
 function setupReveal() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -1545,6 +1556,7 @@ function init() {
   setupReveal();
   setupInclinazione3D();
   setupGalleria3D();
+  setupCampo3D();
   updateSummary();
   renderDashboard();
   if (!importOrderFromHash()) openInitialRoute();
