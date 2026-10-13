@@ -20,13 +20,117 @@ const FASCE_ORARIE = [
   ["14:30", "15:10"], ["15:10", "15:50"], ["15:50", "16:30"], ["16:30", "17:10"],
   ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:10"], ["19:10", "19:50"]
 ];
-const DEFAULT_PRESERVES = [
-  { id: "passata", name: "Passata di pomodoro", enabled: true },
-  { id: "melanzane-olio", name: "Melanzane sott'olio", enabled: true },
-  { id: "peperoni-olio", name: "Peperoni sott'olio", enabled: true },
-  { id: "confettura-fichi", name: "Confettura di fichi", enabled: true },
-  { id: "zucchine-agrodolce", name: "Zucchine in agrodolce", enabled: false }
+// Le conserve vere, dalle etichette. Ingredienti e pesi copiati dalle etichette:
+// se cambia un'etichetta, cambiare anche qui.
+const CONSERVE = [
+  {
+    id: "salsa-pomodori", nome: "Salsa di pomodori misti", peso: "680 g", tinta: "#a3302a",
+    foto: "assets/conserva-salsa-pomodori.webp",
+    ingredienti: "Pomodori misti in quantità variabile 100%. Pomodoro italiano.",
+    usi: [
+      "Sugo in dieci minuti: aglio e olio in padella, la salsa, un pizzico di sale e una foglia di basilico.",
+      "Base per pizza e focaccia, stesa a crudo prima di infornare.",
+      "Uova in purgatorio, polpette al sugo o il ragù cotto piano la domenica."
+    ],
+    buono: [
+      "Licopene, il pigmento rosso del pomodoro: con la cottura e un filo d'olio il corpo lo assorbe meglio.",
+      "Tanta acqua e poche calorie: il pomodoro fresco ne ha circa 20 ogni 100 grammi.",
+      "Potassio e altri carotenoidi, come il betacarotene."
+    ]
+  },
+  {
+    id: "pesto-zucchine", nome: "Pesto di zucchine e basilico con nocciole", peso: "170 g", tinta: "#2e6f37",
+    foto: "assets/conserva-pesto-zucchine.webp",
+    ingredienti: "Zucchine 68%, basilico 11,3%, olio extravergine di oliva, <b>nocciole</b> tostate 6%, succo di limone, sale, aglio.",
+    usi: [
+      "Sulla pasta, sciolto con un cucchiaio dell'acqua di cottura: si condisce a fuoco spento.",
+      "Spalmato su bruschette e crostini, con una scaglia di pecorino.",
+      "In un panino o in una piadina con mozzarella e pomodoro."
+    ],
+    buono: [
+      "Zucchine: più del 90% è acqua, e la buccia porta fibre e luteina.",
+      "Basilico: tanto profumo, così per dare sapore basta meno sale.",
+      "Nocciole: vitamina E e grassi soprattutto monoinsaturi."
+    ]
+  },
+  {
+    id: "crema-zucchine-semi", nome: "Crema di zucchine ai semi", peso: "170 g", tinta: "#5a8f3c",
+    foto: "assets/conserva-crema-zucchine-semi.webp",
+    ingredienti: "Zucchine 81%, olio extravergine di oliva, succo di limone, semi di girasole 1,6%, semi di zucca 1,6%, semi di <b>sesamo</b> 0,8%, semi di cumino dei prati 0,3%, sale, aglio.",
+    usi: [
+      "Su crostini caldi come antipasto, con un filo d'olio a crudo.",
+      "Al posto della maionese in un panino o in un tramezzino.",
+      "Per mantecare un risotto o condire la pasta corta all'ultimo momento."
+    ],
+    buono: [
+      "Zucchine: leggere, ricche d'acqua e di potassio.",
+      "Semi di girasole e di zucca: fibre, magnesio e zinco.",
+      "Sesamo e cumino dei prati: un po' di calcio dal sesamo e un profumo caldo, leggermente anisato."
+    ]
+  },
+  {
+    id: "zucchine-capperi-olive", nome: "Zucchine sott'olio con capperi e olive", peso: "270 g · sgocciolato 170 g", tinta: "#6b7d32",
+    foto: "assets/conserva-zucchine-capperi-olive.webp",
+    ingredienti: "Zucchine romanesche 63%, aceto di vino bianco (contiene <b>solfiti</b>), vino bianco (contiene <b>solfiti</b>), olio extravergine di oliva, capperi sotto sale 2%, olive 3%, origano secco, sale.",
+    usi: [
+      "Antipasto pronto, sul tagliere con salumi e formaggi.",
+      "Nell'insalata di riso, di farro o di pasta fredda.",
+      "Sulla pizza appena sfornata o dentro una focaccia farcita."
+    ],
+    buono: [
+      "Zucchine romanesche: le più saporite, poche calorie e tanta acqua.",
+      "Capperi: tra gli alimenti più ricchi di quercetina, un antiossidante naturale.",
+      "Olive e olio extravergine: grassi soprattutto monoinsaturi."
+    ]
+  },
+  {
+    id: "zucchine-aglio-prezzemolo", nome: "Zucchine sott'olio con aglio e prezzemolo", peso: "270 g · sgocciolato 170 g", tinta: "#3a7a45",
+    foto: "assets/conserva-zucchine-aglio-prezzemolo.webp",
+    ingredienti: "Zucchine romanesche 63%, aceto di vino bianco (contiene <b>solfiti</b>), vino bianco (contiene <b>solfiti</b>), olio extravergine di oliva, prezzemolo 2%, aglio 2%, sale.",
+    usi: [
+      "Contorno pronto per carne o pesce alla griglia.",
+      "Su una fetta di pane casereccio tostato, come bruschetta.",
+      "A pezzetti in una frittata o in una torta salata."
+    ],
+    buono: [
+      "Zucchine romanesche: potassio e fibre, soprattutto nella buccia.",
+      "Prezzemolo: tra gli aromi più ricchi di vitamina K e vitamina C.",
+      "Aglio: i suoi composti solforati, come l'allicina, gli danno il profumo inconfondibile."
+    ]
+  },
+  {
+    id: "crema-zucca", nome: "Crema di zucca, cipolla e nocciole", peso: "180 g", tinta: "#c2622a",
+    foto: "assets/conserva-crema-zucca.webp",
+    ingredienti: "Zucca butternut 58%, cipolla 19%, <b>nocciole</b> tostate 9%, olio extravergine di oliva, succo di limone, sale, pepe.",
+    usi: [
+      "Sulla pasta, allungata con un mestolo d'acqua di cottura.",
+      "Su crostini, con una scaglia di formaggio stagionato.",
+      "Come base per un risotto alla zucca pronto in poco tempo."
+    ],
+    buono: [
+      "Zucca butternut: tanto betacarotene, che il corpo trasforma in vitamina A.",
+      "Cipolla: tra le verdure più ricche di quercetina.",
+      "Nocciole tostate: vitamina E e grassi soprattutto monoinsaturi."
+    ]
+  },
+  {
+    id: "composta-zucca-zenzero", nome: "Composta di zucca e zenzero", peso: "190 g", tinta: "#b98222",
+    foto: "assets/conserva-composta-zucca-zenzero.webp",
+    ingredienti: "Zucca butternut 59%, zucchero di canna grezzo, succo di limone, scorza di limone 0,1%, zenzero fresco 1,9%.",
+    usi: [
+      "Con formaggi stagionati o erborinati, come una mostarda gentile.",
+      "Su yogurt bianco o ricotta, per una colazione diversa.",
+      "Su pane tostato e burro, oppure per farcire una crostata."
+    ],
+    buono: [
+      "Zucca butternut: il suo arancio è betacarotene, che il corpo trasforma in vitamina A.",
+      "Zucca: fibre e potassio nella polpa.",
+      "Zenzero fresco: il sapore pungente viene dai gingeroli, gli stessi della radice appena grattugiata."
+    ]
+  }
 ];
+
+const DEFAULT_PRESERVES = CONSERVE.map(conserva => ({ id: conserva.id, name: conserva.nome, enabled: true }));
 
 const PRODUCTS = [
   { id: "peperoni", name: "Peperoni", weight: "500 g", emoji: "🫑", sheet: SHEET_1, cols: 5, rows: 4, x: 0, y: 0, enabled: true },
@@ -452,6 +556,7 @@ function navigate(view, anchor) {
   if (view === "dashboard" && showDashboardGate()) renderDashboard();
   aggiornaCassettaFluttuante();
   if (view === "builder") {
+    setupDatesAndTimes();
     requestAnimationFrame(() => dropCrates());
     setupCassetta3D();
   }
@@ -732,6 +837,42 @@ function updateSummary() {
   sincronizzaCassetta3D();
 }
 
+let conservaScelta = CONSERVE[0].id;
+
+function renderConserve() {
+  const scelta = $("#conserveScelta");
+  const scheda = $("#conservaScheda");
+  if (!scelta || !scheda) return;
+  const conserva = CONSERVE.find(item => item.id === conservaScelta) || CONSERVE[0];
+  scelta.innerHTML = CONSERVE.map(item => `
+    <button type="button" role="tab" aria-selected="${item.id === conserva.id}" data-conserva="${item.id}" style="--tinta:${item.tinta}">
+      <img src="${item.foto}" alt="" loading="lazy">
+      <span>${item.nome}</span>
+    </button>
+  `).join("");
+  const domanda = encodeURIComponent(`Ciao Alessio, vorrei informazioni sulla conserva "${conserva.nome}".`);
+  scheda.style.setProperty("--tinta", conserva.tinta);
+  scheda.innerHTML = `
+    <div class="conserva-foto"><img src="${conserva.foto}" alt="${conserva.nome}: illustrazione dell'etichetta" loading="lazy"></div>
+    <div class="conserva-testo">
+      <p class="conserva-peso">VASETTO · ${conserva.peso.toUpperCase()}</p>
+      <h3>${conserva.nome.toUpperCase()}</h3>
+      <p class="conserva-ingredienti"><strong>INGREDIENTI</strong> ${conserva.ingredienti}</p>
+      <div class="conserva-liste">
+        <div>
+          <h4>3 MODI PER USARLA</h4>
+          <ol>${conserva.usi.map(uso => `<li>${uso}</li>`).join("")}</ol>
+        </div>
+        <div>
+          <h4>IL BUONO DELLA VERDURA</h4>
+          <ul>${conserva.buono.map(voce => `<li>${voce}</li>`).join("")}</ul>
+        </div>
+      </div>
+      <a class="primary-button conserva-chiedi" href="https://wa.me/${WHATSAPP_NUMBER}?text=${domanda}" target="_blank" rel="noopener">CHIEDIMELA SU WHATSAPP <span>→</span></a>
+    </div>
+  `;
+}
+
 function oggiLocale() {
   const adesso = new Date();
   return new Date(adesso.getTime() - adesso.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -743,8 +884,16 @@ function giorniPrenotabili() {
   return state.deliveryDays.filter(giorno => giorno > oggi);
 }
 
+function aggiornaOrdiniAperti() {
+  const aperti = giorniPrenotabili().length > 0;
+  $("#builderView").classList.toggle("chiuso", !aperti);
+  $("#ordiniChiusi").hidden = aperti;
+  return aperti;
+}
+
 function setupDatesAndTimes() {
   const giorni = giorniPrenotabili();
+  aggiornaOrdiniAperti();
   if (!giorni.includes(state.selectedDate)) state.selectedDate = giorni[0] || "";
   $("#dateChoices").innerHTML = giorni.length
     ? giorni.map((value, index) => {
@@ -769,8 +918,14 @@ function setupDatesAndTimes() {
 
 function validateDelivery() {
   const form = $("#deliveryForm");
+  const giornoScelto = state.selectedDate;
+  setupDatesAndTimes();
   if (!state.selectedDate) {
-    showToast("Al momento non ci sono consegne in calendario: scrivimi su WhatsApp.");
+    showToast("Gli ordini di questa settimana sono chiusi.");
+    return false;
+  }
+  if (state.selectedDate !== giornoScelto) {
+    showToast("Il giorno che avevi scelto non è più disponibile: scegline un altro.");
     return false;
   }
   let valid = true;
@@ -851,6 +1006,12 @@ function confirmOrder() {
   $("#discoveryError").textContent = discovery ? "" : "Scegli una delle quattro opzioni.";
   if (!discovery || !privacy) {
     if (!privacy) showToast("Accetta l'informativa privacy per confermare.");
+    return;
+  }
+  if (!giorniPrenotabili().includes(state.orderData.date)) {
+    setupDatesAndTimes();
+    if (state.selectedDate) goToStep(3);
+    showToast("Il giorno scelto non è più disponibile per gli ordini.");
     return;
   }
 
@@ -961,13 +1122,14 @@ function renderWeekEditor() {
   const productsEditor = $("#weeklyProductsEditor");
   if (!daysEditor || !productsEditor) return;
 
-  daysEditor.innerHTML = state.deliveryDays.map((day, index) => `
+  state.deliveryDays = state.deliveryDays.filter(giorno => giorno >= oggiLocale());
+  daysEditor.innerHTML = state.deliveryDays.length ? state.deliveryDays.map((day, index) => `
     <div class="delivery-day-row">
       <span>${index + 1}</span>
       <input type="date" value="${day}" data-delivery-day="${index}" aria-label="Giorno di consegna ${index + 1}">
       <button type="button" data-remove-delivery-day="${index}" aria-label="Rimuovi giorno ${index + 1}">×</button>
     </div>
-  `).join("");
+  `).join("") : `<p class="editor-note">Nessun giorno in calendario: gli ordini sono chiusi. Aggiungi i giorni della prossima settimana.</p>`;
 
   productsEditor.innerHTML = PRODUCTS.map(product => `
     <div class="admin-product-row" data-admin-product="${product.id}">
@@ -997,9 +1159,14 @@ function aggiornaStatoPubblicazione() {
   const info = $("#pubblicaInfo");
   if (!info) return;
   const quando = state.settimanaPubblicata ? new Date(state.settimanaPubblicata) : null;
-  info.textContent = quando && !isNaN(quando)
+  const giorni = giorniPrenotabili();
+  const ultima = quando && !isNaN(quando)
     ? `Ultima pubblicazione: ${quando.toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })} alle ${quando.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}.`
     : "Settimana non ancora pubblicata.";
+  const stato = giorni.length
+    ? `Ordini APERTI per ${giorni.map(giorno => new Date(`${giorno}T12:00:00`).toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })).join(", ")}.`
+    : "Ordini CHIUSI: pubblica i giorni e le verdure della prossima settimana per riaprirli.";
+  info.textContent = `${stato} ${ultima}`;
   const chiave = leggiChiave();
   $("#pubblicaChiave").hidden = Boolean(chiave);
   $("#cambiaChiave").hidden = !chiave;
@@ -1105,8 +1272,8 @@ async function saveWeekSettings() {
 
 function addDeliveryDay() {
   const lastDay = state.deliveryDays[state.deliveryDays.length - 1];
-  const next = lastDay ? new Date(`${lastDay}T12:00:00`) : new Date();
-  next.setDate(next.getDate() + (lastDay ? 7 : 1));
+  const next = lastDay && lastDay >= oggiLocale() ? new Date(`${lastDay}T12:00:00`) : new Date();
+  next.setDate(next.getDate() + 1);
   const local = new Date(next.getTime() - next.getTimezoneOffset() * 60000);
   state.deliveryDays.push(local.toISOString().slice(0, 10));
   renderWeekEditor();
@@ -1479,6 +1646,13 @@ function setupEvents() {
     const button = event.target.closest("[data-remove-preserve]");
     if (button) removePreserve(Number(button.dataset.removePreserve));
   });
+  $("#conserveScelta").addEventListener("click", event => {
+    const bottone = event.target.closest("[data-conserva]");
+    if (!bottone || bottone.dataset.conserva === conservaScelta) return;
+    conservaScelta = bottone.dataset.conserva;
+    renderConserve();
+    $(`[data-conserva="${conservaScelta}"]`)?.focus({ preventScroll: true });
+  });
   $("#saveWeekSettings").addEventListener("click", saveWeekSettings);
   $("#chiavePubblicazione").addEventListener("input", event => event.target.classList.remove("invalid"));
   $("#cambiaChiave").addEventListener("click", () => {
@@ -1687,9 +1861,11 @@ function openInitialRoute() {
 }
 
 function init() {
+  $("#ordiniChiusiWhatsapp").href = `https://wa.me/${WHATSAPP_NUMBER}`;
   loadLocalOrder();
   loadAdminSettings();
   loadPreserves();
+  renderConserve();
   renderProducts();
   setupDatesAndTimes();
   setupEvents();

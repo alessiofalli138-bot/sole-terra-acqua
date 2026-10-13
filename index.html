@@ -28,6 +28,7 @@
       <nav class="desktop-nav" aria-label="Navigazione principale">
         <a href="#home" data-view-link="home">HOME</a>
         <a href="#storia" data-home-anchor="storia">CHI SONO</a>
+        <a href="#conserve" data-home-anchor="conserve">CONSERVE</a>
         <a href="#componi" data-view-link="builder">COMPONI LA CASSETTA</a>
         <a href="#contatti" data-home-anchor="contatti">CONTATTI</a>
       </nav>
@@ -48,8 +49,9 @@
       <nav>
         <a href="#home" data-view-link="home"><span>01</span> Home</a>
         <a href="#storia" data-home-anchor="storia"><span>02</span> Chi sono</a>
-        <a href="#componi" data-view-link="builder"><span>03</span> Componi la cassetta</a>
-        <a href="#contatti" data-home-anchor="contatti"><span>04</span> Contatti</a>
+        <a href="#conserve" data-home-anchor="conserve"><span>03</span> Le mie conserve</a>
+        <a href="#componi" data-view-link="builder"><span>04</span> Componi la cassetta</a>
+        <a href="#contatti" data-home-anchor="contatti"><span>05</span> Contatti</a>
       </nav>
       <div class="menu-note">
         <span class="status-dot"></span>
@@ -139,6 +141,19 @@
           <button class="secondary-button centered" data-start-builder>VEDI TUTTI I PRODOTTI <span>→</span></button>
         </section>
 
+        <section class="conserve section-wrap" id="conserve">
+          <div class="section-heading reveal">
+            <div>
+              <p class="eyebrow">DAL CAMPO AL VASETTO</p>
+              <h2>LE MIE<br><em>CONSERVE.</em></h2>
+            </div>
+            <p>Le verdure del mio campo, messe in vasetto con ricette semplici e ingredienti che leggi tutti in etichetta. Scegline una: ti dico come usarla e cosa porta in tavola.</p>
+          </div>
+          <div class="conserve-scelta" id="conserveScelta" role="tablist" aria-label="Scegli una conserva"></div>
+          <article class="conserva-scheda" id="conservaScheda" role="tabpanel" aria-live="polite"></article>
+          <p class="conserve-omaggio"><strong>ALLA DECIMA CASSETTA</strong> una conserva te la regalo io: scegli tu quale.</p>
+        </section>
+
         <section class="field-gallery section-wrap">
           <div class="section-heading reveal">
             <div>
@@ -196,6 +211,15 @@
             <button data-step-jump="3"><span>3</span> CONSEGNA</button>
             <i></i>
             <button data-step-jump="4"><span>4</span> RIEPILOGO</button>
+          </div>
+        </div>
+
+        <div class="ordini-chiusi section-wrap" id="ordiniChiusi" hidden>
+          <div class="ordini-chiusi-card">
+            <p class="eyebrow">ORDINI CHIUSI</p>
+            <h2>LA PROSSIMA SETTIMANA<br><em>STA CRESCENDO.</em></h2>
+            <p>In questo momento non si può ordinare. Appena pubblico i giorni di consegna e le verdure della prossima settimana potrai comporre di nuovo la tua cassetta.</p>
+            <a class="primary-button" id="ordiniChiusiWhatsapp" href="#" target="_blank" rel="noopener">SCRIVIMI SU WHATSAPP <span>→</span></a>
           </div>
         </div>
 
