@@ -16,15 +16,15 @@ const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
 const CHIAVE_GITHUB_KEY = "sole-terra-acqua-chiave-pubblicazione";
-// Viterbo e Vitorchiano: fasce da 40 minuti. Zone vicine (+2,50 €): un'unica fascia la sera.
+// Viterbo: fasce da 40 minuti fino alle 19:00 (l'ultima e' di mezz'ora). Zone vicine (+2,50 €): dalle 19:00 alle 20:00.
 const FASCE_ORARIE = [
   ["14:30", "15:10"], ["15:10", "15:50"], ["15:50", "16:30"], ["16:30", "17:10"],
-  ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:10"]
+  ["17:10", "17:50"], ["17:50", "18:30"], ["18:30", "19:00"]
 ];
 const FASCIA_ZONE_VICINE = [["19:00", "20:00"]];
 const LOCALITA = [
   { nome: "Viterbo", costo: 0 },
-  { nome: "Vitorchiano", costo: 0 },
+  { nome: "Vitorchiano", costo: 2.5 },
   { nome: "Bagnaia", costo: 2.5 },
   { nome: "Vetralla", costo: 2.5 },
   { nome: "San Martino", costo: 2.5 },
@@ -1009,6 +1009,11 @@ function aggiornaOrdiniAperti() {
   return aperti;
 }
 
+function minutiFascia(da, a) {
+  const minuti = orario => Number(orario.slice(0, 2)) * 60 + Number(orario.slice(3, 5));
+  return minuti(a) - minuti(da);
+}
+
 function setupDatesAndTimes() {
   const giorni = giorniPrenotabili();
   aggiornaOrdiniAperti();
@@ -1037,7 +1042,7 @@ function setupDatesAndTimes() {
     : fasce.map(([from, to]) => `
       <label>
         <input type="radio" name="deliveryTime" value="${from}–${to}" ${state.selectedTime === `${from}–${to}` ? "checked" : ""}>
-        <span>${from}–${to}<small>${zona.costo ? "ZONE VICINE" : "40 MINUTI"}</small></span>
+        <span>${from}–${to}<small>${zona.costo ? "ZONE VICINE" : `${minutiFascia(from, to)} MINUTI`}</small></span>
       </label>
     `).join("");
 
@@ -1517,7 +1522,7 @@ async function handleProductPhoto(input) {
 function renderDashboardLegacy(filter = "all") {
   const visible = state.orders.filter(order => {
     if (filter === "all") return true;
-    if (filter === "Fuori zona") return !["Viterbo", "Vitorchiano"].includes(order.area);
+    if (filter === "Fuori zona") return order.area !== "Viterbo";
     return order.area === filter;
   });
   const upcoming = state.orders.filter(order => order.status !== "Consegnato").slice(0, 5);
@@ -1547,7 +1552,7 @@ function renderDashboardLegacy(filter = "all") {
   const revenue = state.orders.reduce((sum, order) => sum + Number(order.total), 0) + 174;
   $("#statOrders").textContent = state.orders.length + 11;
   $("#statRevenue").textContent = money(revenue);
-  $("#statExtra").textContent = state.orders.filter(order => !["Viterbo", "Vitorchiano"].includes(order.area)).length + 3;
+  $("#statExtra").textContent = state.orders.filter(order => order.area !== "Viterbo").length + 3;
   renderWeekEditor();
 }
 
@@ -1705,7 +1710,7 @@ function renderDashboard(filter = state.orderFilter || "all") {
   state.orderFilter = filter;
   const visible = state.orders.filter(order => {
     if (filter === "all") return true;
-    if (filter === "Fuori zona") return !["Viterbo", "Vitorchiano"].includes(order.area);
+    if (filter === "Fuori zona") return order.area !== "Viterbo";
     return order.area === filter;
   });
   const upcoming = state.orders.filter(order => order.status !== "Consegnato").slice(0, 5);
@@ -1741,7 +1746,7 @@ function renderDashboard(filter = state.orderFilter || "all") {
   const revenue = state.orders.reduce((sum, order) => sum + Number(order.total), 0) + 174;
   $("#statOrders").textContent = state.orders.length + 11;
   $("#statRevenue").textContent = money(revenue);
-  $("#statExtra").textContent = state.orders.filter(order => !["Viterbo", "Vitorchiano"].includes(order.area)).length + 3;
+  $("#statExtra").textContent = state.orders.filter(order => order.area !== "Viterbo").length + 3;
   renderCustomers();
   renderWeekEditor();
   renderPreservesEditor();
