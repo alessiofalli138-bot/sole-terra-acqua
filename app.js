@@ -14,7 +14,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 35;
+const VERSIONE_SITO = 36;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -626,6 +626,27 @@ function lockDashboard() {
   showToast("Area azienda bloccata.");
 }
 
+// il pulsante "Problemi? Scrivimi" sale sopra la barra del totale quando c'e'; e sui telefoni piccoli
+// si fa da parte se coprirebbe i pulsanti dell'apertura (ricompare appena si scorre)
+function aggiornaPostoAiuto() {
+  const barra = $("#mobileBasketBar");
+  document.body.classList.toggle("con-barra", Boolean(barra) && getComputedStyle(barra).display !== "none");
+  document.body.classList.toggle("vista-azienda", state.view === "dashboard");
+  const aiuto = $("#aiutoWhatsapp");
+  if (!aiuto) return;
+  let copre = false;
+  if (state.view === "home") {
+    const a = aiuto.getBoundingClientRect();
+    copre = [".hero-button", ".hero-conserve"].some(selettore => {
+      const el = $(selettore);
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && a.left < r.right && a.right > r.left && a.top < r.bottom + 6 && a.bottom > r.top - 6;
+    });
+  }
+  aiuto.classList.toggle("si-fa-da-parte", copre);
+}
+
 function navigate(view, anchor) {
   if (view === "dashboard" && !isOwnerRoute()) {
     view = "home";
@@ -636,6 +657,7 @@ function navigate(view, anchor) {
   $$(".view").forEach(el => el.classList.toggle("active", el.dataset.view === view));
   $$(".desktop-nav a").forEach(el => el.classList.toggle("active", el.dataset.viewLink === view));
   $("#mobileBasketBar").style.display = view === "builder" && window.innerWidth <= 980 ? "flex" : "";
+  aggiornaPostoAiuto();
   openMenu(false);
   requestAnimationFrame(() => {
     if (anchor && $(`#${anchor}`)) $(`#${anchor}`).scrollIntoView({ behavior: "smooth" });
@@ -1089,6 +1111,7 @@ function aggiornaOrdiniAperti() {
   const aperti = giorniPrenotabili().length > 0 || !state.settimanaArrivata;
   $("#builderView").classList.toggle("chiuso", !aperti);
   $("#ordiniChiusi").hidden = aperti;
+  aggiornaPostoAiuto();
   return aperti;
 }
 
@@ -2044,7 +2067,7 @@ function setupEvents() {
   window.addEventListener("scroll", () => {
     if (fluttuaInCoda) return;
     fluttuaInCoda = true;
-    requestAnimationFrame(() => { fluttuaInCoda = false; aggiornaCassettaFluttuante(); });
+    requestAnimationFrame(() => { fluttuaInCoda = false; aggiornaCassettaFluttuante(); aggiornaPostoAiuto(); });
   }, { passive: true });
   window.addEventListener("resize", aggiornaCassettaFluttuante);
   $("#menuButton").addEventListener("click", () => openMenu(true));
@@ -2196,6 +2219,14 @@ function setupEvents() {
   });
   window.addEventListener("resize", () => {
     $("#mobileBasketBar").style.display = state.view === "builder" && window.innerWidth <= 980 ? "flex" : "";
+    aggiornaPostoAiuto();
+  });
+  // "Problemi? Scrivimi": il messaggio dice gia' versione, pagina e telefono, cosi' capisco subito dove guardare
+  $("#aiutoWhatsapp").addEventListener("click", event => {
+    const pagina = state.view === "builder" ? `componi la cassetta, passo ${state.step}` : state.view === "dashboard" ? "area azienda" : "home";
+    const telefono = /iPhone|iPad/.test(navigator.userAgent) ? "iPhone" : /Android/.test(navigator.userAgent) ? "Android" : "computer";
+    const testo = `Ciao Alessio, ho un problema con il sito: \n\n(versione ${VERSIONE_SITO} · ${pagina} · ${telefono})`;
+    event.currentTarget.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(testo)}`;
   });
 }
 
@@ -2364,12 +2395,19 @@ function setupFurgone() {
       w = Math.max(130, Math.min(210, larghezza * 0.52, (sotto - sopra) * 330 / 175));
       const h = w * 175 / 330;
       top = sopra + Math.max(0, (sotto - sopra - h) / 2);
+      if (sotto - sopra < h) {
+        // telefono piccolo: niente spazio tra KM 0 e i testi. Passa in alto nel cielo e si ferma
+        // a sinistra, dove non c'e' il riquadro KM 0
+        w = Math.min(150, Math.max(110, riquadro.offsetLeft - 24));
+        top = 10;
+        furgone.dataset.sostaSinistra = "1";
+      }
     } else {
       // computer: nella meta' con la foto, sopra il riquadro KM 0
       w = Math.min(330, Math.max(250, larghezza * 0.22));
       top = riquadro.offsetTop - w * 175 / 330 - 16;
     }
-    const sosta = larghezza <= 980 ? (larghezza - w) / 2 : Math.max(24, larghezza * 0.24 - w / 2);
+    const sosta = furgone.dataset.sostaSinistra ? 12 : larghezza <= 980 ? (larghezza - w) / 2 : Math.max(24, larghezza * 0.24 - w / 2);
     furgone.style.setProperty("--furgone-w", `${Math.round(w)}px`);
     furgone.style.setProperty("--fuori-sx", `${Math.round(-w * 1.5)}px`);
     furgone.style.setProperty("--sosta", `${Math.round(sosta)}px`);
@@ -2450,6 +2488,7 @@ function openInitialRoute() {
 
 function init() {
   $("#versioneSito").textContent = `versione ${VERSIONE_SITO}`;
+  window.addEventListener("load", aggiornaPostoAiuto);
   setTimeout(controllaVersione, 4000);
   $("#ordiniChiusiWhatsapp").href = `https://wa.me/${WHATSAPP_NUMBER}`;
   loadLocalOrder();

@@ -310,7 +310,7 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .hero-proof {
   position: absolute;
   left: 45px;
-  bottom: 38px;
+  bottom: 84px;
   width: max-content;
   max-width: calc(100% - 48px);
   min-height: 92px;
@@ -1174,6 +1174,16 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 .site-footer p { font-size: .79rem; line-height: 1.7; letter-spacing: .1em; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 15px; }
 .site-footer nav a, .site-footer > small { font-size: .69rem; letter-spacing: .1em; color: #b7c1ba; }
+/* "Problemi? Scrivimi": sempre visibile, in basso a SINISTRA (mai le cose importanti in basso a destra) */
+.aiuto-whatsapp { position: fixed; z-index: 26; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: inline-flex; align-items: center; gap: 8px; padding: 5px 13px 5px 5px; border-radius: 999px; background: #fffaf0; color: var(--green-deep); text-decoration: none; box-shadow: 0 8px 22px rgba(16,30,21,.22); border: 1px solid rgba(31,45,36,.12); transition: transform .2s ease, bottom .25s ease; }
+.aiuto-whatsapp:hover { transform: translateY(-2px); }
+.aiuto-icona { width: 32px; height: 32px; border-radius: 50%; background: #25d366; display: grid; place-items: center; flex-shrink: 0; }
+.aiuto-icona svg { width: 21px; height: 21px; }
+.aiuto-testo { font-size: .68rem; font-weight: 900; letter-spacing: .08em; line-height: 1; white-space: nowrap; }
+.aiuto-testo b { color: #1a9e4b; }
+body.vista-azienda .aiuto-whatsapp { display: none; }
+.aiuto-whatsapp { transition: transform .2s ease, bottom .25s ease, opacity .25s ease; }
+.aiuto-whatsapp.si-fa-da-parte { opacity: 0; pointer-events: none; transform: translateY(12px); }
 .toast { position: fixed; z-index: 100; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: var(--ink); color: white; padding: 14px 20px; font-size: .81rem; letter-spacing: .06em; opacity: 0; pointer-events: none; transition: .3s; box-shadow: var(--shadow); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
@@ -1181,6 +1191,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 .reveal.visible { opacity: 1; transform: none; }
 
 @media (max-width: 980px) {
+  body.con-barra .aiuto-whatsapp { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
   .conserve { padding-block: 80px; }
   .conserve-scelta { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 4px 8px; margin-inline: -4px; }
   .conserve-scelta button { flex: 0 0 132px; scroll-snap-align: start; }
@@ -1194,7 +1205,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
   .header-cart { justify-self: end; }
   .hero { min-height: 650px; height: calc(100svh - var(--header-height)); }
   .hero-shade { background: linear-gradient(0deg, rgba(19,35,24,.78), rgba(19,35,24,.05) 70%); }
-  .hero-content { width: min(620px, calc(100% - 48px)); left: 24px; right: auto; top: auto; bottom: 45px; transform: none; }
+  .hero-content { width: min(620px, calc(100% - 48px)); left: 24px; right: auto; top: auto; bottom: 136px; transform: none; }   /* sotto resta il posto per "Problemi? Scrivimi" */
   .hero-content h1 { font-size: clamp(3.3rem, 12vw, 5rem); }
   .hero-proof { top: 24px; right: 24px; left: auto; bottom: auto; }
   .story { grid-template-columns: 1fr; }
