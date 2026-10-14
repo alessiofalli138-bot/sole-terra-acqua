@@ -12,6 +12,8 @@ const POINTS_FOR_REWARD = 10;
 const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // La settimana (giorni di consegna e verdure) sta in settimana.json, pubblicato sul sito:
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
+// deve essere uguale al numero di CACHE_NAME in sw.js: si alzano insieme a ogni pubblicazione
+const VERSIONE_SITO = 29;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -582,6 +584,7 @@ function navigate(view, anchor) {
   });
   if (view === "dashboard" && showDashboardGate()) renderDashboard();
   aggiornaCassettaFluttuante();
+  controllaVersione();
   if (view === "builder") {
     ricontrollaSettimana();
     setupDatesAndTimes();
@@ -1313,6 +1316,24 @@ function applicaSettimana(dati) {
 function loadAdminSettings() {
   try { state.settimanaArrivata = applicaSettimana(JSON.parse(localStorage.getItem(SETTIMANA_COPIA_KEY))); } catch (_) {}
 }
+
+// Il sito e' una pagina sola: chi lo tiene aperto non si ricarica mai e resta sulla versione
+// vecchia. Controllo il numero online e, se e' piu' nuovo, ricarico (mai durante consegna e
+// conferma; il carrello e' salvato).
+let ultimoControlloVersione = 0;
+async function controllaVersione() {
+  if (Date.now() - ultimoControlloVersione < 60000) return;
+  ultimoControlloVersione = Date.now();
+  try {
+    const testo = await (await fetch(`sw.js?v=${Date.now()}`, { cache: "no-store" })).text();
+    const online = Number((testo.match(/sole-terra-acqua-v(\d+)/) || [])[1]);
+    if (!online || online <= VERSIONE_SITO) return;
+    if (state.view === "builder" && state.step >= 3) return;   // riprovo alla prossima occasione
+    ultimoControlloVersione = 0;
+    location.reload();
+  } catch (_) {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) controllaVersione(); });
 
 let ultimoControlloSettimana = 0;
 function ricontrollaSettimana() {
@@ -2313,6 +2334,8 @@ function openInitialRoute() {
 }
 
 function init() {
+  $("#versioneSito").textContent = `versione ${VERSIONE_SITO}`;
+  setTimeout(controllaVersione, 4000);
   $("#ordiniChiusiWhatsapp").href = `https://wa.me/${WHATSAPP_NUMBER}`;
   loadLocalOrder();
   loadAdminSettings();
