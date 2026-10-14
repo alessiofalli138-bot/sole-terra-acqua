@@ -13,7 +13,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // La settimana (giorni di consegna e verdure) sta in settimana.json, pubblicato sul sito:
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js: si alzano insieme a ogni pubblicazione
-const VERSIONE_SITO = 29;
+const VERSIONE_SITO = 30;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -615,7 +615,19 @@ function applyCrateVisual(crate) {
 
 // Sul telefono, scendendo tra i prodotti, la cassetta resta visibile in alto in piccolo.
 // Il segnaposto tiene lo spazio della cassetta grande, cosi' la pagina non salta.
+// mentre si scorrono le verdure la cassetta 3D gira lenta su se stessa; tornando su si rimette di fronte
+function aggiornaGiroCassetta() {
+  if (!cassetta3D?.gira) return;
+  const griglia = $("#productGrid");
+  const scorre = state.view === "builder" && state.step === 2 && Boolean(griglia)
+    && griglia.getBoundingClientRect().top < window.innerHeight * 0.45;
+  if (scorre === aggiornaGiroCassetta.attivo) return;
+  aggiornaGiroCassetta.attivo = scorre;
+  cassetta3D.gira(scorre);
+}
+
 function aggiornaCassettaFluttuante() {
+  aggiornaGiroCassetta();
   const slot = $(".live-crate-slot");
   const card = $(".live-crate-card");
   const sezione = slot?.closest(".order-step");
@@ -813,7 +825,7 @@ function setupCassetta3D() {
   cassetta3DPartita = true;
   import("./cassetta3d.js")
     .then(m => m.avviaCassetta3D({ contenitori: [$("#liveCrateVisual"), $("#summaryCrateVisual")], prodotti: PRODUCTS }))
-    .then(c => { cassetta3D = c; sincronizzaCassetta3D(); })
+    .then(c => { cassetta3D = c; sincronizzaCassetta3D(); aggiornaGiroCassetta(); })
     .catch(() => $$(".crate-visual").forEach(el => el.classList.remove("crate-3d")));
 }
 
@@ -1175,7 +1187,13 @@ function renderPopupConserve() {
   $("#popupConserveConferma").disabled = !pezzi;
 }
 
+// sul telefono il popup compare sotto il dito: un doppio tocco premeva subito "No grazie"
+// e il popup non si vedeva nemmeno. Per il primo secondo i suoi pulsanti non rispondono.
+let popupApertoAlle = 0;
+const popupAppenaAperto = () => performance.now() - popupApertoAlle < 900;
+
 function apriPopupConserve() {
+  popupApertoAlle = performance.now();
   renderPopupConserve();
   $("#popupConserve").hidden = false;
   document.body.style.overflow = "hidden";
@@ -2036,19 +2054,24 @@ function setupEvents() {
   });
   $("#popupConserveLista").addEventListener("click", event => {
     const bottone = event.target.closest("[data-popup-conserva]");
-    if (!bottone) return;
+    if (!bottone || popupAppenaAperto()) return;
     changeConserva(bottone.dataset.popupConserva, 1);
     renderPopupConserve();
     renderCheckout();
   });
-  $("#popupConserveConferma").addEventListener("click", () => { chiudiPopupConserve(); confirmOrder(); });
+  $("#popupConserveConferma").addEventListener("click", () => {
+    if (popupAppenaAperto()) return;
+    chiudiPopupConserve();
+    confirmOrder();
+  });
   $("#popupConserveNo").addEventListener("click", () => {
+    if (popupAppenaAperto()) return;
     state.conserveProposte = true;   // ha detto no: non lo richiedo per questo ordine
     chiudiPopupConserve();
     confirmOrder();
   });
   $("#popupConserve").addEventListener("click", event => {
-    if (event.target === event.currentTarget) chiudiPopupConserve();   // tocco fuori: torno al riepilogo
+    if (event.target === event.currentTarget && !popupAppenaAperto()) chiudiPopupConserve();   // tocco fuori: torno al riepilogo
   });
   $("#conserveScelta").addEventListener("click", event => {
     const bottone = event.target.closest("[data-conserva]");

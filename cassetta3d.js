@@ -218,6 +218,9 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
 
   // ---------------------------------------------------------------- rotazione col dito
   let yaw = 0, velYaw = 0, trascino = null, ultimaMano = -1e9;
+  // giro lento automatico (mentre si scorrono le verdure): un giro ogni 12 secondi circa
+  const VELOCITA_GIRO = 2 * Math.PI / 12;
+  let autoGiro = false, velGiro = 0;
   tela.addEventListener("pointerdown", e => { trascino = { x: e.clientX, ultimo: e.clientX, id: e.pointerId, mosso: false }; velYaw = 0; sveglia(); });
   tela.addEventListener("pointermove", e => {
     if (!trascino || e.pointerId !== trascino.id) return;
@@ -283,10 +286,16 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
       yaw += velYaw;
       velYaw *= 0.92;
       if (ora - ultimaMano > 3200 && Math.abs(velYaw) < 0.002) {
-        // ritorno dolce verso il davanti, con un leggero ondeggiare mentre la verdura cade
-        const ondeggia = ora - ultimoMovimento < 2500 ? Math.sin(ora / 900) * 0.16 : 0;
-        const vicino = Math.round(yaw / (2 * Math.PI)) * 2 * Math.PI;
-        yaw += (vicino + ondeggia - yaw) * 0.05;
+        // il giro parte e si ferma dolcemente
+        velGiro += ((autoGiro ? VELOCITA_GIRO : 0) - velGiro) * Math.min(1, dt * 1.6);
+        if (velGiro > 0.02) {
+          yaw += velGiro * dt;
+        } else {
+          // ritorno dolce verso il davanti, con un leggero ondeggiare mentre la verdura cade
+          const ondeggia = ora - ultimoMovimento < 2500 ? Math.sin(ora / 900) * 0.16 : 0;
+          const vicino = Math.round(yaw / (2 * Math.PI)) * 2 * Math.PI;
+          yaw += (vicino + ondeggia - yaw) * 0.05;
+        }
       }
     }
     if (cadutaCassetta < 1) {
@@ -316,7 +325,7 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
   function ciclo(ora) {
     if (!inVista || document.hidden) { inCorsa = false; return; }
     disegna(ora);
-    const fermo = !trascino && cadutaCassetta >= 1 && Math.abs(velYaw) < 0.0005 && ora - ultimoMovimento > 400 && !inUscita.length
+    const fermo = !trascino && !autoGiro && velGiro <= 0.02 && cadutaCassetta >= 1 && Math.abs(velYaw) < 0.0005 && ora - ultimoMovimento > 400 && !inUscita.length
       && verdure.every(v => !(v.attesa > 0)) && Math.abs(yaw - Math.round(yaw / (2 * Math.PI)) * 2 * Math.PI) < 0.002;
     if (fermo && ora > attivoFino) { inCorsa = false; return; }
     requestAnimationFrame(ciclo);
@@ -378,5 +387,11 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
     disegna(prima);
   }
 
-  return { sincronizza, aggancia, avanza, ruota: angolo => { yaw = angolo; mondo.rotation.y = angolo; ultimaMano = performance.now(); disegna(performance.now()); } };
+  tela.giroCassetta = () => ({ yaw, velGiro, autoGiro });   // per i collaudi
+  const gira = attivo => {
+    autoGiro = Boolean(attivo);
+    if (autoGiro) sveglia();
+  };
+
+  return { sincronizza, aggancia, avanza, gira, ruota: angolo => { yaw = angolo; mondo.rotation.y = angolo; ultimaMano = performance.now(); disegna(performance.now()); } };
 }
