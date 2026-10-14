@@ -1333,5 +1333,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
+  /* "Riduci movimento" (attivo su molti iPhone): ogni animazione fa un solo giro istantaneo e si
+     ferma. Senza "iteration-count: 1" le animazioni infinite (il pulsante che respira, la casella
+     delle conserve...) si ripetevano ogni centesimo di millisecondo e tremavano velocissime. */
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
