@@ -1,4 +1,4 @@
-const CACHE_NAME = "sole-terra-acqua-v27";
+const CACHE_NAME = "sole-terra-acqua-v28";
 
 // Solo l'essenziale per far comparire il sito subito, anche senza rete.
 // Tutto il resto (foto della galleria, immagini del catalogo) viene messo in
@@ -38,6 +38,26 @@ self.addEventListener("fetch", event => {
   // a GitHub della dashboard non vanno mai in cache: le lascio passare dirette
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin || url.pathname.endsWith("/settimana.json")) return;
+
+  // pagine, codice e stili: prima la rete, cosi' ogni novita' arriva subito a tutti;
+  // la copia salvata serve solo quando manca la rete. Prima era il contrario e le novita'
+  // si vedevano solo all'apertura successiva.
+  const codice = event.request.mode === "navigate" || url.pathname.endsWith("/") || /\.(html|js|css|webmanifest)$/.test(url.pathname);
+  if (codice) {
+    const richiesta = event.request.mode === "navigate" ? event.request.url : event.request;
+    event.respondWith(
+      fetch(richiesta, { cache: "no-cache" }).then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(event.request).then(cached => cached || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // immagini e il resto: dalla copia salvata (non cambiano), altrimenti dalla rete
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;

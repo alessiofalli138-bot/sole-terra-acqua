@@ -393,11 +393,13 @@ function decodeFromUrl(payload = "") {
   }
 }
 
+// dati dell'ordine nel link "Registra l'ordine": versione 2, piu' corta (le conserve sono
+// "posizione x quantita'"); i link della versione 1 si leggono ancora
 function compactOrderForLink(order) {
   return [
+    2,
     order.id || "",
     order.date || "",
-    order.time || "",
     order.deliveryWindow || "",
     order.name || "",
     normalizePhone(order.phone || ""),
@@ -406,13 +408,25 @@ function compactOrderForLink(order) {
     order.box || "",
     Number(order.total || 0),
     order.source || "",
-    (order.conserve || []).map(item => `${item.quantita}× ${item.nome}`).join("; ")
+    (order.conserve || []).map(item => `${CONSERVE.findIndex(conserva => conserva.id === item.id)}x${item.quantita}`).join(",")
   ];
 }
 
 function expandImportedOrder(data) {
   if (!Array.isArray(data)) return data;
-  const [id, date, time, deliveryWindow, name, phone, address, area, box, total, source, conserve] = data;
+  let id, date, time, deliveryWindow, name, phone, address, area, box, total, source, conserve;
+  if (data[0] === 2) {
+    let codice;
+    [, id, date, deliveryWindow, name, phone, address, area, box, total, source, codice] = data;
+    time = String(deliveryWindow || "").slice(0, 5);
+    conserve = String(codice || "").split(",").filter(Boolean).map(pezzo => {
+      const [posizione, quantita] = pezzo.split("x").map(Number);
+      const conserva = CONSERVE[posizione];
+      return conserva ? `${quantita}× ${conserva.nome}` : "";
+    }).filter(Boolean).join("; ");
+  } else {
+    [id, date, time, deliveryWindow, name, phone, address, area, box, total, source, conserve] = data;
+  }
   return {
     id,
     date,
@@ -1111,34 +1125,32 @@ function selectedProductLines() {
   return getOrderItems().map(item => `- ${item.quantity} x ${item.name} (${item.weight})`);
 }
 
+// messaggio che il cliente mi manda: corto, una riga per cosa
 function buildWhatsAppUrl(orderInput, discoverySource) {
   const order = typeof orderInput === "object" ? orderInput : null;
   const orderId = order?.id || orderInput;
   const notes = (order?.notes || state.orderData.notes || "").trim();
-  const productLines = order?.items?.length
-    ? order.items.map(item => `- ${item.quantity} x ${item.name} (${item.weight})`).join("\n")
-    : selectedProductLines().join("\n");
-  const conserve = order?.conserve || conserveOrdinate();
+  const items = order?.items?.length ? order.items : getOrderItems();
+  const verdure = items.map(item => `${item.quantity > 1 ? `${item.quantity}× ` : ""}${item.name}`).join(", ");
+  const conserve = (order?.conserve || conserveOrdinate()).map(item => `${item.quantita > 1 ? `${item.quantita}× ` : ""}${item.nome}`).join(", ");
+  const area = order?.area || state.orderData.area;
+  const giorno = formatDate(order?.date || state.orderData.date);
+  const scatola = (order?.box || boxData().label).toLowerCase();
   const importUrl = order ? dashboardImportUrl(order) : "";
   const message = [
-    `Nuovo ordine confermato dal sito: ${orderId}.`,
+    `*NUOVO ORDINE ${orderId}*`,
+    `📅 ${giorno.charAt(0)}${giorno.slice(1).toLowerCase()}, ${order?.deliveryWindow || state.orderData.time}`,
+    `📍 ${order?.address || state.orderData.address}, ${area}`,
+    `👤 ${order?.name || state.orderData.fullName} · ${order?.phone || state.orderData.phone}`,
     "",
-    `Nome: ${order?.name || state.orderData.fullName}`,
-    `Cellulare: ${order?.phone || state.orderData.phone}`,
-    `Consegna: ${formatDate(order?.date || state.orderData.date).toLowerCase()} - ${order?.deliveryWindow || state.orderData.time}`,
-    `Indirizzo: ${order?.address || state.orderData.address}, ${order?.area || state.orderData.area}`,
-    `Cassetta: ${order?.box || boxData().label} (${quotaCount()} prodotti)`,
-    "Prodotti:",
-    productLines,
-    conserve.length ? "Conserve:" : "",
-    conserve.map(item => `- ${item.quantita} x ${item.nome} (${item.peso}) ${money(item.quantita * item.prezzo)}`).join("\n"),
-    notes ? `Note: ${notes}` : "",
-    `Totale indicativo: ${money(order?.total || total())}`,
-    `Mi ha conosciuto tramite: ${discoverySource}`,
-    importUrl ? "" : "",
-    importUrl ? "Importa:" : "",
-    importUrl
-  ].filter(Boolean).join("\n");
+    `🧺 Cassetta ${scatola}: ${verdure}`,
+    conserve ? `🫙 Conserve: ${conserve}` : "",
+    notes ? `📝 ${notes}` : "",
+    "",
+    `💶 *Totale ${money(order?.total || total())}* (${area === "Viterbo" ? "consegna gratuita" : `consegna ${money(2.5)} inclusa`})`,
+    `Mi ha conosciuto: ${discoverySource}`,
+    importUrl ? `\nRegistra l'ordine: ${importUrl}` : ""
+  ].filter((riga, indice, righe) => riga !== "" || (righe[indice - 1] && righe[indice - 1] !== "")).join("\n").trim();
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
@@ -1181,7 +1193,6 @@ function confirmOrder() {
   }
   // nessuna conserva nel carrello: prima di confermare gliele propongo una volta
   if (!pezziConserve() && conserveInVendita().length && !state.conserveProposte) {
-    state.conserveProposte = true;
     apriPopupConserve();
     return;
   }
@@ -2010,7 +2021,11 @@ function setupEvents() {
     renderCheckout();
   });
   $("#popupConserveConferma").addEventListener("click", () => { chiudiPopupConserve(); confirmOrder(); });
-  $("#popupConserveNo").addEventListener("click", () => { chiudiPopupConserve(); confirmOrder(); });
+  $("#popupConserveNo").addEventListener("click", () => {
+    state.conserveProposte = true;   // ha detto no: non lo richiedo per questo ordine
+    chiudiPopupConserve();
+    confirmOrder();
+  });
   $("#popupConserve").addEventListener("click", event => {
     if (event.target === event.currentTarget) chiudiPopupConserve();   // tocco fuori: torno al riepilogo
   });
@@ -2286,7 +2301,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   if (!["http:", "https:"].includes(window.location.protocol)) return;
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
   });
 }
 
