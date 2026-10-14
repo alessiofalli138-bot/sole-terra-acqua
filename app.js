@@ -12,8 +12,9 @@ const POINTS_FOR_REWARD = 10;
 const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // La settimana (giorni di consegna e verdure) sta in settimana.json, pubblicato sul sito:
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
-// deve essere uguale al numero di CACHE_NAME in sw.js: si alzano insieme a ogni pubblicazione
-const VERSIONE_SITO = 30;
+// deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
+// si alzano tutti insieme a ogni pubblicazione
+const VERSIONE_SITO = 31;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -823,7 +824,7 @@ function setupCassetta3D() {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || navigator.connection?.saveData) return;
   if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
   cassetta3DPartita = true;
-  import("./cassetta3d.js")
+  import(`./cassetta3d.js?v=${VERSIONE_SITO}`)
     .then(m => m.avviaCassetta3D({ contenitori: [$("#liveCrateVisual"), $("#summaryCrateVisual")], prodotti: PRODUCTS }))
     .then(c => { cassetta3D = c; sincronizzaCassetta3D(); aggiornaGiroCassetta(); })
     .catch(() => $$(".crate-visual").forEach(el => el.classList.remove("crate-3d")));
@@ -2324,7 +2325,7 @@ function setupCampo3D() {
   if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (navigator.connection?.saveData) return;
   if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
-  const parti = () => import("./campo3d.js").then(m => m.avviaCampo3D(hero)).catch(() => {});
+  const parti = () => import(`./campo3d.js?v=${VERSIONE_SITO}`).then(m => m.avviaCampo3D(hero)).catch(() => {});
   if ("requestIdleCallback" in window) requestIdleCallback(parti, { timeout: 1500 });
   else setTimeout(parti, 700);
 }
@@ -2346,6 +2347,14 @@ function registerServiceWorker() {
   if (!["http:", "https:"].includes(window.location.protocol)) return;
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {});
+    // e' uscita una versione nuova: rispondo "ho capito" e mi ricarico appena il cliente
+    // non sta compilando la consegna o confermando (altrimenti ci riprovo dopo)
+    navigator.serviceWorker.addEventListener("message", event => {
+      if (!event.data || event.data.tipo !== "nuova-versione") return;
+      event.source?.postMessage({ tipo: "ho-capito" });
+      ultimoControlloVersione = 0;
+      controllaVersione();
+    });
   });
 }
 

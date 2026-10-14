@@ -1,4 +1,4 @@
-const CACHE_NAME = "sole-terra-acqua-v30";
+const CACHE_NAME = "sole-terra-acqua-v31";
 
 // Solo l'essenziale per far comparire il sito subito, anche senza rete.
 // Tutto il resto (foto della galleria, immagini del catalogo) viene messo in
@@ -20,16 +20,37 @@ const APP_SHELL = [
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    // "reload": i file dell'installazione li prendo dal sito, mai da una copia vecchia del browser
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(APP_SHELL.map(indirizzo => new Request(indirizzo, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
   );
 });
 
+// Le pagine col codice nuovo rispondono "ho-capito" e si ricaricano da sole quando e' il momento
+// giusto (non durante consegna e conferma). Quelle col codice vecchio non rispondono: le ricarico io.
+const hannoCapito = new Set();
+self.addEventListener("message", event => {
+  if (event.data && event.data.tipo === "ho-capito" && event.source) hannoCapito.add(event.source.id);
+});
+
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    )).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const chiavi = await caches.keys();
+    const cEraUnaVersionePrima = chiavi.some(chiave => chiave !== CACHE_NAME);
+    await Promise.all(chiavi.filter(chiave => chiave !== CACHE_NAME).map(chiave => caches.delete(chiave)));
+    await self.clients.claim();
+    // chi apre il sito per la prima volta ha gia' tutto nuovo: niente ricariche inutili
+    if (!cEraUnaVersionePrima) return;
+    const finestre = await self.clients.matchAll({ type: "window" });
+    finestre.forEach(finestra => finestra.postMessage({ tipo: "nuova-versione" }));
+    await new Promise(fatto => setTimeout(fatto, 1500));
+    // senza "await": la ricarica deve partire DOPO che questa attivazione e' finita,
+    // altrimenti la pagina aspetta l'attivazione e l'attivazione aspetta la pagina
+    finestre
+      .filter(finestra => !hannoCapito.has(finestra.id))
+      .forEach(finestra => finestra.navigate(finestra.url).catch(() => {}));
+  })());
 });
 
 self.addEventListener("fetch", event => {
@@ -52,7 +73,7 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
         return response;
-      }).catch(() => caches.match(event.request).then(cached => cached || caches.match("./index.html")))
+      }).catch(() => caches.match(event.request, { ignoreSearch: true }).then(cached => cached || caches.match("./index.html")))
     );
     return;
   }
