@@ -14,7 +14,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 31;
+const VERSIONE_SITO = 32;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -453,15 +453,73 @@ function ownerDashboardUrl(hash = "dashboard") {
   return `${window.location.origin}${window.location.pathname}?${OWNER_QUERY}=${OWNER_VALUE}#${hash}`;
 }
 
+// Link "Registra l'ordine", formato 3: campi corti separati da punti, spazi come trattini.
+// Niente _ * ~ (WhatsApp li usa per corsivo, grassetto e barrato e spezzerebbe il link).
+const ORIGINI_CLIENTE = ["Instagram", "Facebook", "Amici", "Già cliente"];
+const testoPerLink = valore => encodeURIComponent(String(valore || ""))
+  .replace(/[-_.!~*'()]/g, carattere => `%${carattere.charCodeAt(0).toString(16).toUpperCase()}`)
+  .replace(/%20/g, "-");
+const testoDalLink = valore => {
+  try { return decodeURIComponent(String(valore || "").replace(/-/g, "%20")); } catch (_) { return ""; }
+};
+
+function codificaOrdine(order) {
+  const origine = ORIGINI_CLIENTE.indexOf(order.source);
+  return [
+    3,
+    order.id,
+    String(order.date || "").replace(/-/g, "").slice(2),                      // 2026-10-23 -> 261023
+    String(order.deliveryWindow || order.time || "").slice(0, 5).replace(":", ""),   // 19:00 -> 1900
+    testoPerLink(order.name),
+    normalizePhone(order.phone || ""),
+    testoPerLink(order.address),
+    Math.max(0, LOCALITA.findIndex(localita => localita.nome === order.area)),
+    String(order.box || "M").charAt(0).toUpperCase(),
+    Math.round(Number(order.total || 0) * 100),                               // in centesimi
+    origine >= 0 ? origine : testoPerLink(order.source),
+    (order.conserve || []).map(item => `${CONSERVE.findIndex(conserva => conserva.id === item.id)}x${item.quantita}`).join(",")
+  ].join(".").replace(/\.+$/, "");   // mai un punto finale: WhatsApp lo lascerebbe fuori dal link
+}
+
+function decodificaOrdine(testo) {
+  const [, id, data, inizio, nome, telefono, indirizzo, zona, scatola, centesimi, origine, codiceConserve] = testo.split(".");
+  const area = LOCALITA[Number(zona)]?.nome || "Viterbo";
+  const ora = `${String(inizio || "").slice(0, 2)}:${String(inizio || "").slice(2, 4)}`;
+  const fascia = [...FASCE_ORARIE, ...FASCIA_ZONE_VICINE].find(([da]) => da === ora);
+  const conserve = String(codiceConserve || "").split(",").filter(Boolean).map(pezzo => {
+    const [posizione, quantita] = pezzo.split("x").map(Number);
+    const conserva = CONSERVE[posizione];
+    return conserva ? `${quantita}× ${conserva.nome}` : "";
+  }).filter(Boolean).join("; ");
+  return {
+    id,
+    date: data ? `20${data.slice(0, 2)}-${data.slice(2, 4)}-${data.slice(4, 6)}` : "",
+    time: ora,
+    deliveryWindow: fascia ? `${fascia[0]}–${fascia[1]}` : ora,
+    name: testoDalLink(nome),
+    phone: telefono || "",
+    address: testoDalLink(indirizzo),
+    area,
+    box: { P: "Piccola", M: "Media", G: "Grande" }[scatola] || "Media",
+    total: Number(centesimi || 0) / 100,
+    source: /^\d+$/.test(origine || "") ? ORIGINI_CLIENTE[Number(origine)] || "" : testoDalLink(origine),
+    status: "Confermato",
+    items: [],
+    notes: conserve ? `Conserve: ${conserve}` : "",
+    loyaltyCredited: false
+  };
+}
+
 function dashboardImportUrl(order) {
-  const payload = encodeForUrl(compactOrderForLink(order));
-  return ownerDashboardUrl(`o=${payload}`);
+  // senza "?a=1": basta #o= perche' il sito apra la dashboard
+  return `${window.location.origin}${window.location.pathname}#o=${codificaOrdine(order)}`;
 }
 
 function importOrderFromHash() {
   const match = window.location.hash.match(/(?:import-order|o)=([^&]+)/);
   if (!match) return false;
-  const imported = expandImportedOrder(decodeFromUrl(match[1]));
+  // formato 3 (corto, "3.R...") oppure i link vecchi in base64
+  const imported = match[1].startsWith("3.") ? decodificaOrdine(match[1]) : expandImportedOrder(decodeFromUrl(match[1]));
   if (!imported?.id || !imported?.name) {
     showToast("Link ordine non valido.");
     return false;
