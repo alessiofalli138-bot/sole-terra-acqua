@@ -290,6 +290,9 @@
                 </div>
                 <div class="quota-dots" id="quotaDots"></div>
                 <p id="quotaHint">Nel prezzo sono inclusi da 4 a 6 prodotti</p>
+                <a class="invito-conserve" id="invitoConserve" href="#conserveCarrello" hidden>
+                  <img src="assets/conserva-mini-salsa.webp" alt="" width="26" height="26"> CASSETTA PRONTA: AGGIUNGI LE MIE CONSERVE <b>↓</b>
+                </a>
               </div>
               <div class="live-crate-slot">
               <div class="live-crate-card">
@@ -313,9 +316,16 @@
               <div class="product-grid" id="productGrid"></div>
               <div class="conserve-carrello" id="conserveCarrello" hidden>
                 <div class="conserve-carrello-head">
-                  <small>DAL CAMPO AL VASETTO</small>
-                  <h3>AGGIUNGI LE MIE CONSERVE</h3>
-                  <p>Arrivano insieme alla cassetta, nella stessa consegna.</p>
+                  <div class="conserve-carrello-vasetti" aria-hidden="true">
+                    <img src="assets/conserva-mini-salsa.webp" alt="">
+                    <img src="assets/conserva-mini-pesto.webp" alt="">
+                    <img src="assets/conserva-mini-zucca.webp" alt="">
+                  </div>
+                  <div>
+                    <small>NON SOLO VERDURA · DAL CAMPO AL VASETTO</small>
+                    <h3>AGGIUNGI LE MIE <em>CONSERVE</em></h3>
+                    <p>Arrivano insieme alla cassetta, nella stessa consegna.</p>
+                  </div>
                 </div>
                 <div class="conserve-carrello-griglia" id="conserveCarrelloGriglia"></div>
               </div>
@@ -477,16 +487,16 @@
           </div>
           <div class="dashboard-date">
             <small>GIORNATA CONSEGNE</small>
-            <strong id="dashboardDate">SABATO 4 LUGLIO</strong>
+            <strong id="dashboardDate">—</strong>
             <button class="dashboard-logout" id="lockDashboard" type="button">ESCI</button>
           </div>
         </div>
 
         <div class="dashboard-stats">
-          <article><span>ORDINI OGGI</span><strong id="statOrders">18</strong><small>su 32 posti disponibili</small></article>
-          <article><span>INCASSO PREVISTO</span><strong id="statRevenue">291,50 €</strong><small>+12% dalla scorsa settimana</small></article>
-          <article><span>CONSEGNE EXTRA</span><strong id="statExtra">7</strong><small>fuori Viterbo</small></article>
-          <article class="mint"><span>CLIENTI SODDISFATTI</span><strong>96%</strong><small>da 15 recensioni private</small></article>
+          <article><span>ORDINI DA CONSEGNARE</span><strong id="statOrders">0</strong><small id="statOrdersNota">su 32 posti per giornata</small></article>
+          <article><span>INCASSO PREVISTO</span><strong id="statRevenue">0,00 €</strong><small>dagli ordini da consegnare</small></article>
+          <article><span>CONSEGNE EXTRA</span><strong id="statExtra">0</strong><small>fuori Viterbo, +2,50 €</small></article>
+          <article class="mint"><span>CLIENTI</span><strong id="statClienti">0</strong><small>recensioni: ancora nessuna</small></article>
         </div>
 
         <section class="week-manager">
@@ -496,7 +506,11 @@
               <h2>CONSEGNE E PRODOTTI</h2>
               <p>Aggiorna ciò che vedranno i clienti nella composizione della cassetta.</p>
             </div>
-            <button class="primary-button" id="saveWeekSettings">SALVA E PUBBLICA <span>→</span></button>
+            <div class="week-manager-azioni">
+              <button class="primary-button" id="modificaSettimana" type="button">MODIFICA <span>✎</span></button>
+              <button class="back-button" type="button" data-annulla-modifica hidden>ANNULLA</button>
+              <button class="primary-button" id="saveWeekSettings" type="button" data-salva-settimana hidden>SALVA E PUBBLICA <span>→</span></button>
+            </div>
           </div>
 
           <div class="pubblica-stato">
@@ -509,7 +523,9 @@
             </div>
           </div>
 
-          <div class="week-manager-grid">
+          <div class="settimana-riepilogo" id="settimanaRiepilogo"></div>
+
+          <div class="week-manager-grid" id="settimanaEditor" hidden>
             <div class="delivery-editor">
               <div class="editor-title">
                 <div>
@@ -527,8 +543,12 @@
                 <div>
                   <small>DISPONIBILITÀ</small>
                   <h3>VERDURE DELLA SETTIMANA</h3>
+                  <span class="verdure-accese" id="verdureAccese"></span>
                 </div>
-                <span>FOTO · NOME · PESO</span>
+                <div class="editor-title-azioni">
+                  <button type="button" data-tutte-verdure="0">SPEGNI TUTTE</button>
+                  <button type="button" data-tutte-verdure="1">ACCENDI TUTTE</button>
+                </div>
               </div>
               <div class="admin-products-table">
                 <div class="admin-product-row admin-product-header">
@@ -548,6 +568,11 @@
               </div>
               <div id="conserveVenditaEditor"></div>
               <p class="editor-note">Una conserva compare in vendita solo se ha un prezzo e l'interruttore è acceso. Si pubblica insieme alla settimana.</p>
+            </div>
+
+            <div class="week-manager-fondo">
+              <button class="back-button" type="button" data-annulla-modifica hidden>ANNULLA</button>
+              <button class="primary-button" type="button" data-salva-settimana hidden>SALVA E PUBBLICA <span>→</span></button>
             </div>
           </div>
         </section>
@@ -578,8 +603,7 @@
               <div class="map-label l3">QUERCIA</div>
             </div>
             <div class="route-summary" id="routeSummary">
-              <div><span class="route-color sage"></span><p><strong>GIRO 1 · 14:30–16:30</strong><small>Viterbo centro → Quercia → Bagnaia</small></p><b>8 ORDINI</b></div>
-              <div><span class="route-color peach"></span><p><strong>GIRO 2 · 17:10–19:50</strong><small>San Martino → Vitorchiano → Vetralla</small></p><b>10 ORDINI</b></div>
+
             </div>
           </section>
 
@@ -587,7 +611,7 @@
             <div class="panel-head compact">
               <div>
                 <p class="eyebrow">PROSSIME CONSEGNE</p>
-                <h2>OGGI</h2>
+                <h2>DA FARE</h2>
               </div>
               <span class="live-badge"><i></i> LIVE</span>
             </div>
