@@ -845,8 +845,22 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 .satisfaction-note > strong { font: italic 2.7rem Georgia, serif; color: var(--green); }
 .satisfaction-note p { font-size: .79rem; letter-spacing: .08em; font-weight: 900; margin: 0; }
 .satisfaction-note small { display: block; color: var(--muted); font-weight: 400; letter-spacing: 0; margin-top: 5px; }
-.privacy-check { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; cursor: pointer; }
-.privacy-check input { width: 18px; min-height: 18px; accent-color: var(--green); margin: 0; }
+.privacy-check { display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; cursor: pointer; padding: 12px 14px; border: 2px solid transparent; border-radius: var(--small-radius); transition: background .2s, border-color .2s, box-shadow .2s; }
+.privacy-check input { width: 24px; min-height: 24px; height: 24px; accent-color: var(--green); margin: 0; }
+/* quello che manca per confermare: bordo rosso, fondo rosato, una scossa e una scritta */
+.discovery-fieldset.da-completare, .privacy-check.da-completare { border-color: #c0392b; background: #fdecea; box-shadow: 0 0 0 4px rgba(192,57,43,.16); }
+.discovery-fieldset.da-completare legend { color: #c0392b; background: #fdecea; }
+.discovery-fieldset.da-completare .field-error { display: block; margin-top: 12px; color: #c0392b; font-weight: 900; font-size: .84rem; }
+.privacy-check.da-completare span { color: #7a2318; }
+.privacy-check.da-completare::after { content: "↑ MANCA LA CROCETTA: TOCCA IL QUADRATINO"; grid-column: 1 / -1; color: #c0392b; font-size: .76rem; font-weight: 900; letter-spacing: .06em; }
+.richiamo { animation: richiamo .45s ease-in-out 2; }
+@keyframes richiamo {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
 .privacy-check span { font-family: Arial, sans-serif; font-size: .82rem; line-height: 1.45; color: var(--muted); }
 .payoff { margin-top: 35px; text-align: center; font: italic 2rem Georgia, serif; color: var(--green); }
 .order-success { display: none; text-align: center; padding: 50px 20px; }

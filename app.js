@@ -14,7 +14,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 33;
+const VERSIONE_SITO = 34;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -1266,11 +1266,25 @@ function chiudiPopupConserve() {
 function confirmOrder() {
   const discovery = $('input[name="discovery"]:checked');
   const privacy = $("#privacyCheck").checked;
-  $("#discoveryError").textContent = discovery ? "" : "Scegli una delle quattro opzioni.";
+  $("#discoveryError").textContent = discovery ? "" : "Tocca una delle quattro risposte qui sopra.";
+  $(".discovery-fieldset").classList.toggle("da-completare", !discovery);
+  $(".privacy-check").classList.toggle("da-completare", !privacy);
   if (!discovery || !privacy) {
-    if (!privacy) showToast("Accetta l'informativa privacy per confermare.");
+    // prima l'avviso compariva solo vicino alla domanda, spesso fuori dallo schermo: sembrava che
+    // "conferma ordine" non funzionasse. Ora porto il cliente li' e lo evidenzio.
+    const primo = !discovery ? $(".discovery-fieldset") : $(".privacy-check");
+    primo.scrollIntoView({ behavior: "smooth", block: "center" });
+    primo.classList.remove("richiamo");
+    void primo.offsetWidth;
+    primo.classList.add("richiamo");
+    showToast(!discovery
+      ? "Manca una risposta: dimmi come mi hai conosciuto."
+      : "Manca la crocetta sulla privacy: toccala e poi conferma.", 4500);
     return;
   }
+  // tutto a posto: via l'eventuale avviso rimasto, non deve coprire il popup o la conferma
+  clearTimeout(showToast.timer);
+  $("#toast").classList.remove("show");
   // nessuna conserva nel carrello: prima di confermare gliele propongo una volta
   if (!pezziConserve() && conserveInVendita().length && !state.conserveProposte) {
     apriPopupConserve();
@@ -2168,7 +2182,13 @@ function setupEvents() {
     renderDashboard(button.dataset.orderFilter);
   }));
   $$("input, select, textarea", $("#deliveryForm")).forEach(field => field.addEventListener("input", () => field.classList.remove("invalid")));
-  $$('input[name="discovery"]').forEach(input => input.addEventListener("change", () => $("#discoveryError").textContent = ""));
+  $$('input[name="discovery"]').forEach(input => input.addEventListener("change", () => {
+    $("#discoveryError").textContent = "";
+    $(".discovery-fieldset").classList.remove("da-completare");
+  }));
+  $("#privacyCheck").addEventListener("change", event => {
+    if (event.target.checked) $(".privacy-check").classList.remove("da-completare");
+  });
   window.addEventListener("resize", () => {
     $("#mobileBasketBar").style.display = state.view === "builder" && window.innerWidth <= 980 ? "flex" : "";
   });

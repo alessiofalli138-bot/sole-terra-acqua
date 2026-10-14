@@ -16,6 +16,7 @@ const MISURE = {
 const SPESSORE = 0.012;
 const PALO = 0.032;
 const RAGGIO = 0.08;           // raggio di una verdura, per la fisica
+const GIRO_MAX = 0.5;          // quanto puo' inclinarsi l'immagine di una verdura (radianti)
 const GRAVITA = -5.2;          // un po' meno della vera, per vedere bene la caduta
 const PROPORZIONE_MARCHIO = 1702 / 151;
 
@@ -120,6 +121,40 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
   const inUscita = [];
   const geometria = new THREE.PlaneGeometry(1, 1);
 
+  // Quanto e' larga e alta la parte colorata del ritaglio (lo sfondo trasparente non conta),
+  // misurata dal centro: frazioni della larghezza e dell'altezza del ritaglio.
+  const ingombri = new Map();
+  function parteColorata(base, prodotto) {
+    if (ingombri.has(prodotto.id)) return ingombri.get(prodotto.id);
+    let esito = { x: 0.5, y: 0.5 };
+    try {
+      const img = base.image;
+      const cw = img.width / prodotto.cols, ch = img.height / prodotto.rows;
+      const W = 96, H = Math.max(8, Math.round(W * ch / cw));
+      const tela2d = document.createElement("canvas");
+      tela2d.width = W; tela2d.height = H;
+      const ctx = tela2d.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, prodotto.x * cw, prodotto.y * ch, cw, ch, 0, 0, W, H);
+      const dati = ctx.getImageData(0, 0, W, H).data;
+      let sx = W, dx = -1, alto = H, basso = -1;
+      for (let yy = 0; yy < H; yy++) {
+        for (let xx = 0; xx < W; xx++) {
+          if (dati[(yy * W + xx) * 4 + 3] < 107) continue;   // come alphaTest 0.42
+          if (xx < sx) sx = xx; if (xx > dx) dx = xx;
+          if (yy < alto) alto = yy; if (yy > basso) basso = yy;
+        }
+      }
+      if (dx >= 0) {
+        esito = {
+          x: Math.max(0.5 - sx / W, (dx + 1) / W - 0.5),
+          y: Math.max(0.5 - alto / H, (basso + 1) / H - 0.5)
+        };
+      }
+    } catch (_) {}
+    ingombri.set(prodotto.id, esito);
+    return esito;
+  }
+
   async function creaVerdura(chiave, id) {
     const prodotto = prodotti.find(p => p.id === id);
     if (!prodotto) return null;
@@ -134,9 +169,24 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
     mesh.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: t, alphaTest: 0.42 });
     mesh.castShadow = true;
     const r = RAGGIO * (0.94 + Math.random() * 0.12);
-    const lato = r * 2 * 1.42;
+    const lato = r * 2 * 1.32;
     mesh.scale.set(lato * Math.max(1, proporzione), lato * Math.max(1, 1 / proporzione), 1);
-    return { chiave, id, pos: new THREE.Vector3(), vel: new THREE.Vector3(), r, mesh, giro: (Math.random() - 0.5) * 0.9, entrata: 0 };
+    // l'immagine guarda sempre verso chi guarda: girando la cassetta la sua larghezza finisce
+    // verso qualsiasi parete. Ingombro = mezza larghezza della parte colorata, anche inclinata.
+    const colorata = parteColorata(base, prodotto);
+    const mezzaL = colorata.x * mesh.scale.x, mezzaA = colorata.y * mesh.scale.y;
+    const ingombro = Math.max(r, mezzaL * Math.cos(GIRO_MAX) + mezzaA * Math.sin(GIRO_MAX));
+    return { chiave, id, pos: new THREE.Vector3(), vel: new THREE.Vector3(), r, ingombro, mesh, giro: (Math.random() - 0.5) * 0.9, entrata: 0 };
+  }
+
+  const limiteX = v => Math.max(0.004, misura.l / 2 - v.ingombro);
+  const limiteZ = v => Math.max(0.004, misura.p / 2 - v.ingombro);
+  function dentroLePareti(v) {
+    const mx = limiteX(v), mz = limiteZ(v);
+    if (v.pos.x < -mx) { v.pos.x = -mx; v.vel.x = Math.abs(v.vel.x) * 0.3; }
+    if (v.pos.x > mx) { v.pos.x = mx; v.vel.x = -Math.abs(v.vel.x) * 0.3; }
+    if (v.pos.z < -mz) { v.pos.z = -mz; v.vel.z = Math.abs(v.vel.z) * 0.3; }
+    if (v.pos.z > mz) { v.pos.z = mz; v.vel.z = -Math.abs(v.vel.z) * 0.3; }
   }
 
   // fa cadere una verdura sopra il punto piu' libero della cassetta
@@ -144,9 +194,9 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
     const m = misura;
     let migliore = null;
     for (let i = 0; i < 10; i++) {
-      const x = (Math.random() - 0.5) * (m.l - 2 * v.r) * 0.9;
+      const x = (Math.random() - 0.5) * 2 * limiteX(v) * 0.9;
       // di preferenza verso il fondo: li' si vedono sopra l'asse davanti
-      const z = (Math.random() * 1.15 - 0.85) * (m.p / 2 - v.r);
+      const z = (Math.random() * 1.15 - 0.85) * limiteZ(v);
       let colonna = SPESSORE;
       for (const o of verdure) {
         if (o === v) continue;
@@ -175,11 +225,7 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
         if (v.vel.y < 0) v.vel.y = -v.vel.y * 0.24;
         v.vel.x *= 0.86; v.vel.z *= 0.86;
       }
-      const mx = m.l / 2 - v.r, mz = m.p / 2 - v.r;
-      if (v.pos.x < -mx) { v.pos.x = -mx; v.vel.x = Math.abs(v.vel.x) * 0.3; }
-      if (v.pos.x > mx) { v.pos.x = mx; v.vel.x = -Math.abs(v.vel.x) * 0.3; }
-      if (v.pos.z < -mz) { v.pos.z = -mz; v.vel.z = Math.abs(v.vel.z) * 0.3; }
-      if (v.pos.z > mz) { v.pos.z = mz; v.vel.z = -Math.abs(v.vel.z) * 0.3; }
+      dentroLePareti(v);
     }
     const n = new THREE.Vector3();
     for (let giro = 0; giro < 3; giro++) {
@@ -208,9 +254,11 @@ export async function avviaCassetta3D({ contenitori, prodotti }) {
     }
     for (const v of verdure) {
       if (v.attesa > 0) { moto = 1; continue; }
+      dentroLePareti(v);   // gli urti possono averla spinta fuori: la rimetto dentro prima di disegnare
       v.vel.multiplyScalar(0.997);
       if (v.vel.lengthSq() < 0.0016 && v.pos.y - v.r < m.a + 0.2) v.vel.multiplyScalar(0.6);
       v.giro += (v.vel.x * Math.cos(yaw) - v.vel.z * Math.sin(yaw)) * dt / v.r * -0.6;
+      v.giro = Math.max(-GIRO_MAX, Math.min(GIRO_MAX, v.giro));
       moto = Math.max(moto, v.vel.lengthSq());
     }
     if (moto > 0.0009) ultimoMovimento = performance.now();
