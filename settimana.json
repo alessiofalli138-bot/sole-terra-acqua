@@ -1,14 +1,14 @@
 {
-  "aggiornato": "2026-10-14T06:25:35.522Z",
+  "aggiornato": "2026-10-14T06:38:14.686Z",
   "giorni": [
-    "2026-10-15"
+    "2026-10-23"
   ],
   "prodotti": [
     {
       "id": "peperoni",
       "nome": "Peperoni",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -22,7 +22,7 @@
       "id": "pomodori",
       "nome": "Pomodori",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -43,28 +43,28 @@
       "id": "lattuga-gentilina",
       "nome": "Lattuga gentilina",
       "peso": "1 cespo",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "lattuga-iceberg",
       "nome": "Lattuga iceberg",
       "peso": "1 cespo",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cicoria",
       "nome": "Cicoria",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "bieta-colorata",
       "nome": "Bieta colorata",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -78,70 +78,70 @@
       "id": "cocomero",
       "nome": "Cocomero",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "melone",
       "nome": "Melone",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "broccolo-romanesco",
       "nome": "Broccolo romanesco",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "broccolo-siciliano",
       "nome": "Broccolo siciliano",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cavolfiore",
       "nome": "Cavolfiore",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cavolo-cappuccio",
       "nome": "Cavolo cappuccio",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cavolo-cappuccio-viola",
       "nome": "Cavolo cappuccio viola",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "verza",
       "nome": "Verza",
       "peso": "1 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cipolle-tropea",
       "nome": "Cipolle di Tropea",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "cipolle-bianche",
       "nome": "Cipolle bianche",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -169,14 +169,14 @@
       "id": "carciofi",
       "nome": "Carciofi",
       "peso": "3 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "asparagi",
       "nome": "Asparagi",
       "peso": "1 mazzo",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -204,14 +204,14 @@
       "id": "fiori-zucca",
       "nome": "Fiori di zucca",
       "peso": "10 pz",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
       "id": "peperoncini",
       "nome": "Peperoncini",
       "peso": "200 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     },
     {
@@ -239,7 +239,7 @@
       "id": "friggitelli",
       "nome": "Peperoni friggitelli",
       "peso": "500 g",
-      "disponibile": true,
+      "disponibile": false,
       "foto": ""
     }
   ],
