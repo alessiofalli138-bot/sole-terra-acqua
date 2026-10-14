@@ -206,6 +206,89 @@ em { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
 .secondary-button { background: transparent; border: 1px solid var(--green); color: var(--green); }
 .cream-button { background: var(--cream); color: var(--green-deep); min-width: 210px; }
 .back-button { background: transparent; padding-inline: 0; color: var(--muted); }
+/* Furgoncino: attraversa l'apertura una volta sola quando si apre la home */
+.furgone { position: absolute; left: 0; top: 60%; width: var(--furgone-w, 260px); pointer-events: none; opacity: 0; }
+.furgone.in-viaggio { opacity: 1; animation: furgoneViaggio 4s linear both; will-change: transform; }
+.furgone-mezzo { display: block; width: 100%; height: auto; overflow: visible; transform-origin: 56% 90%; filter: drop-shadow(0 12px 14px rgba(10,20,12,.3)); }
+.furgone.in-viaggio .furgone-mezzo { animation: furgoneAssetto 4s linear both; }
+.furgone .ruota { transform-box: fill-box; transform-origin: center; }
+.furgone.in-viaggio .ruota { animation: furgoneRuote 4s linear both; }
+.furgone-carrozzeria, .furgone-carico { transform-box: fill-box; transform-origin: 50% 100%; }
+.furgone.in-viaggio .furgone-carrozzeria { animation: furgoneSobbalzo .24s ease-in-out infinite alternate; }
+.furgone.in-viaggio .furgone-carico { animation: furgoneCarico 4s ease-in-out both; }
+.furgone-scia, .furgone-polvere { position: absolute; opacity: 0; }
+.furgone.in-viaggio .furgone-scia, .furgone.in-viaggio .furgone-polvere { animation: furgoneInMoto 4s linear both; }
+.furgone-scia { right: 100%; top: 26%; width: 42%; }
+.furgone-scia i { display: block; height: 3px; margin: 10px 0 10px auto; border-radius: 3px; background: rgba(255,250,240,.8); animation: furgoneVento .42s linear infinite; }
+.furgone-scia i:nth-child(1) { width: 70%; }
+.furgone-scia i:nth-child(2) { width: 100%; animation-delay: .14s; }
+.furgone-scia i:nth-child(3) { width: 55%; animation-delay: .28s; }
+.furgone-polvere { left: 4%; bottom: 4%; width: 1px; height: 1px; }
+.furgone-polvere i { position: absolute; right: 0; bottom: 0; width: 20px; height: 20px; border-radius: 50%; background: rgba(226,206,168,.78); animation: furgoneNuvola .6s ease-out infinite; }
+.furgone-polvere i:nth-child(2) { animation-delay: .2s; }
+.furgone-polvere i:nth-child(3) { animation-delay: .4s; }
+@keyframes furgoneViaggio {
+  0% { transform: translateX(var(--fuori-sx)); animation-timing-function: cubic-bezier(.12, .78, .3, 1); }
+  32% { transform: translateX(var(--sosta)); }
+  45% { transform: translateX(var(--sosta)); animation-timing-function: cubic-bezier(.62, 0, .88, .42); }
+  100% { transform: translateX(var(--fuori-dx)); }
+}
+/* frenata: il muso si abbassa; partenza: il muso si alza */
+@keyframes furgoneAssetto {
+  0% { transform: rotate(-1.2deg); }
+  27% { transform: rotate(0deg); }
+  33% { transform: rotate(3deg); }
+  38% { transform: rotate(-1deg); }
+  43%, 45% { transform: rotate(0deg); }
+  51% { transform: rotate(-3.5deg); }
+  66%, 100% { transform: rotate(-1.4deg); }
+}
+@keyframes furgoneRuote {
+  0% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.12, .78, .3, 1); }
+  32% { transform: rotate(1800deg); }
+  45% { transform: rotate(1800deg); animation-timing-function: cubic-bezier(.62, 0, .88, .42); }
+  100% { transform: rotate(5400deg); }
+}
+@keyframes furgoneSobbalzo { from { transform: translateY(0); } to { transform: translateY(-1.6px); } }
+@keyframes furgoneCarico {
+  0%, 28% { transform: rotate(0deg); }
+  34% { transform: rotate(2.6deg); }
+  40% { transform: rotate(-1.2deg); }
+  45% { transform: rotate(0deg); }
+  52% { transform: rotate(-2.6deg); }
+  64%, 100% { transform: rotate(-.6deg); }
+}
+@keyframes furgoneInMoto { 0%, 25% { opacity: 1; } 32%, 45% { opacity: 0; } 51%, 100% { opacity: 1; } }
+@keyframes furgoneVento { from { transform: translateX(35%); opacity: 0; } 30% { opacity: 1; } to { transform: translateX(-70%); opacity: 0; } }
+@keyframes furgoneNuvola { from { transform: translate(0, 0) scale(.35); opacity: .85; } to { transform: translate(-48px, -12px) scale(1.7); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .furgone { display: none; } }
+
+/* Popup: "sei sicuro di non volere un'ottima conserva?" */
+.popup-conserve[hidden] { display: none; }
+.popup-conserve { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(16,30,21,.55); animation: popupSfondo .25s ease both; }
+/* titolo e pulsanti restano sempre visibili: scorre solo l'elenco delle conserve */
+.popup-conserve-card { position: relative; display: flex; flex-direction: column; width: min(520px, 100%); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: hidden; background: #fffaf0; border-radius: var(--soft-radius); padding: 20px 22px 16px; text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,.35); border-top: 6px solid var(--terracotta); animation: popupEntra .35s cubic-bezier(.2, .9, .3, 1.2) both; }
+.popup-conserve-card > * { flex-shrink: 0; }
+.popup-conserve-esclamativo { width: 52px; height: 52px; margin: 0 auto 6px; border-radius: 50%; display: grid; place-items: center; background: var(--terracotta); color: #fffaf0; font: 900 1.9rem/1 Georgia, serif; border: 4px solid #fffaf0; box-shadow: 0 8px 20px rgba(184,102,76,.45); animation: popupEsclamativo 1.6s ease-in-out .4s infinite; }
+.popup-conserve-aspetta { margin: 2px 0 0; color: var(--terracotta); font-size: .78rem; font-weight: 900; letter-spacing: .22em; }
+.popup-conserve-card > p strong { color: var(--green-deep); }
+.popup-conserve-card h2 { margin: 6px 0 10px; font-size: clamp(1.25rem, 4.6vw, 1.7rem); line-height: 1.1; }
+.popup-conserve-card h2 em { display: block; margin-top: 4px; color: var(--terracotta); font-size: 1.12em; }
+.popup-conserve-card > p { margin: 0 auto 16px; max-width: 400px; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+.popup-conserve-lista { flex: 1 1 auto; flex-shrink: 1; min-height: 110px; overflow-y: auto; overscroll-behavior: contain; display: grid; align-content: start; gap: 8px; text-align: left; margin-bottom: 14px; padding: 2px 2px 4px; }
+.popup-conserva { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 8px; border-radius: var(--small-radius); background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--tinta); }
+.popup-conserva img { width: 64px; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 8px; background: #f5f0dd; }
+.popup-conserva strong { display: block; font-size: .78rem; letter-spacing: .03em; line-height: 1.25; }
+.popup-conserva small { color: var(--tinta); font-size: .74rem; font-weight: 900; }
+.popup-conserva button { border: 0; border-radius: 999px; padding: 9px 13px; background: var(--terracotta); color: #fffaf0; font-size: .7rem; font-weight: 900; letter-spacing: .06em; cursor: pointer; white-space: nowrap; }
+.popup-conserva.aggiunta { box-shadow: 0 0 0 2px var(--tinta) inset; }
+.popup-conserva.aggiunta button { background: var(--green); }
+.popup-conserve-azioni { display: grid; gap: 6px; justify-items: center; }
+.popup-conserve-azioni .primary-button { width: 100%; justify-content: center; }
+@keyframes popupSfondo { from { opacity: 0; } }
+@keyframes popupEntra { from { opacity: 0; transform: translateY(24px) scale(.94); } }
+@keyframes popupEsclamativo { 0%, 100% { transform: scale(1) rotate(0deg); } 12% { transform: scale(1.12) rotate(-8deg); } 24% { transform: scale(1.12) rotate(8deg); } 36% { transform: scale(1) rotate(0deg); } }
+
 /* Riquadro nell'apertura che porta alla sezione conserve */
 .hero-conserve { display: inline-flex; align-items: center; gap: 14px; margin-top: 20px; padding: 10px 20px 10px 11px; border-radius: 999px; background: rgba(255,250,240,.96); color: var(--green-deep); text-decoration: none; box-shadow: 0 12px 30px rgba(19,35,24,.26), 0 0 0 0 rgba(237,180,154,.55); transform-origin: left center; animation: conserveRespiro 3.8s ease-in-out 1.9s infinite; }
 .hero-conserve:hover { animation-play-state: paused; background: #fffaf0; }
@@ -1144,6 +1227,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--green); box-shad
 }
 
 @media (max-width: 700px) {
+  .popup-conserve-card { padding: 16px 14px 12px; }
+  .popup-conserve-esclamativo { width: 44px; height: 44px; font-size: 1.6rem; }
+  .popup-conserve-card > p { font-size: .8rem; margin-bottom: 12px; }
+  .popup-conserva { grid-template-columns: 46px 1fr auto; gap: 8px; padding: 6px 7px; }
+  .popup-conserva img { width: 46px; }
+  .popup-conserva strong { font-size: .7rem; }
+  .popup-conserva small { font-size: .68rem; }
+  .popup-conserva button { padding: 8px 10px; font-size: .64rem; }
   .admin-products-table { overflow: visible; }
   .admin-product-header { display: none; }
   .admin-product-row { min-width: 0; grid-template-columns: 58px minmax(0, 1fr) 52px; grid-template-areas: "foto nome dispo" "foto peso dispo"; gap: 6px 10px; }

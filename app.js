@@ -880,6 +880,7 @@ function ripristinaCarrello() {
 }
 
 function svuotaCarrello() {
+  state.conserveProposte = false;
   state.selectionOrder = [];
   Object.keys(state.quantities).forEach(id => { state.quantities[id] = 0; });
   state.conserve = {};
@@ -1141,12 +1142,47 @@ function buildWhatsAppUrl(orderInput, discoverySource) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
+function renderPopupConserve() {
+  $("#popupConserveLista").innerHTML = conserveInVendita().map(conserva => {
+    const quante = state.conserve[conserva.id] || 0;
+    return `
+      <div class="popup-conserva ${quante ? "aggiunta" : ""}" style="--tinta:${conserva.tinta}">
+        <img src="${conserva.foto}" alt="" loading="lazy">
+        <div><strong>${conserva.nome.toUpperCase()}</strong><small>${conserva.peso} · ${money(conserva.prezzo)}</small></div>
+        <button type="button" data-popup-conserva="${conserva.id}">${quante ? `✓ ${quante} NEL CARRELLO` : "+ AGGIUNGI"}</button>
+      </div>
+    `;
+  }).join("");
+  const pezzi = pezziConserve();
+  $("#popupConserveConferma").innerHTML = pezzi
+    ? `CONFERMA CON ${pezzi} ${pezzi === 1 ? "CONSERVA" : "CONSERVE"} · ${money(total())} <span>→</span>`
+    : `SCEGLI UNA CONSERVA QUI SOPRA <span>↑</span>`;
+  $("#popupConserveConferma").disabled = !pezzi;
+}
+
+function apriPopupConserve() {
+  renderPopupConserve();
+  $("#popupConserve").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function chiudiPopupConserve() {
+  $("#popupConserve").hidden = true;
+  document.body.style.overflow = "";
+}
+
 function confirmOrder() {
   const discovery = $('input[name="discovery"]:checked');
   const privacy = $("#privacyCheck").checked;
   $("#discoveryError").textContent = discovery ? "" : "Scegli una delle quattro opzioni.";
   if (!discovery || !privacy) {
     if (!privacy) showToast("Accetta l'informativa privacy per confermare.");
+    return;
+  }
+  // nessuna conserva nel carrello: prima di confermare gliele propongo una volta
+  if (!pezziConserve() && conserveInVendita().length && !state.conserveProposte) {
+    state.conserveProposte = true;
+    apriPopupConserve();
     return;
   }
   if (!giorniPrenotabili().includes(state.orderData.date)) {
@@ -1966,6 +2002,18 @@ function setupEvents() {
     const button = event.target.closest("[data-remove-preserve]");
     if (button) removePreserve(Number(button.dataset.removePreserve));
   });
+  $("#popupConserveLista").addEventListener("click", event => {
+    const bottone = event.target.closest("[data-popup-conserva]");
+    if (!bottone) return;
+    changeConserva(bottone.dataset.popupConserva, 1);
+    renderPopupConserve();
+    renderCheckout();
+  });
+  $("#popupConserveConferma").addEventListener("click", () => { chiudiPopupConserve(); confirmOrder(); });
+  $("#popupConserveNo").addEventListener("click", () => { chiudiPopupConserve(); confirmOrder(); });
+  $("#popupConserve").addEventListener("click", event => {
+    if (event.target === event.currentTarget) chiudiPopupConserve();   // tocco fuori: torno al riepilogo
+  });
   $("#conserveScelta").addEventListener("click", event => {
     const bottone = event.target.closest("[data-conserva]");
     if (!bottone || bottone.dataset.conserva === conservaScelta) return;
@@ -2152,6 +2200,66 @@ function setupGalleria3D() {
 }
 
 // Campo 3D in apertura: si carica a pagina pronta, solo se il telefono lo regge.
+// Furgoncino: entra sfrecciando, frena un attimo nella parte con la foto e riparte.
+// Una volta sola, quando si apre la home; mai sopra i titoli.
+function setupFurgone() {
+  const hero = $(".hero");
+  const furgone = $("#furgone");
+  if (!hero || !furgone) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || state.view !== "home") { furgone.remove(); return; }
+
+  const misura = () => {
+    const larghezza = hero.clientWidth;
+    const riquadro = $(".hero-proof", hero);
+    const testi = $(".hero-content", hero);
+    let w;
+    let top;
+    if (larghezza <= 980) {
+      // telefono: nello spazio libero tra il riquadro KM 0 (in alto) e i testi (in basso)
+      const sopra = riquadro.offsetTop + riquadro.offsetHeight + 14;
+      const sotto = testi.offsetTop - 10;
+      w = Math.max(130, Math.min(210, larghezza * 0.52, (sotto - sopra) * 330 / 175));
+      const h = w * 175 / 330;
+      top = sopra + Math.max(0, (sotto - sopra - h) / 2);
+    } else {
+      // computer: nella meta' con la foto, sopra il riquadro KM 0
+      w = Math.min(330, Math.max(250, larghezza * 0.22));
+      top = riquadro.offsetTop - w * 175 / 330 - 16;
+    }
+    const sosta = larghezza <= 980 ? (larghezza - w) / 2 : Math.max(24, larghezza * 0.24 - w / 2);
+    furgone.style.setProperty("--furgone-w", `${Math.round(w)}px`);
+    furgone.style.setProperty("--fuori-sx", `${Math.round(-w * 1.5)}px`);
+    furgone.style.setProperty("--sosta", `${Math.round(sosta)}px`);
+    furgone.style.setProperty("--fuori-dx", `${Math.round(larghezza + 40)}px`);
+    furgone.style.top = `${Math.round(top)}px`;
+  };
+
+  let partito = false;
+  const parti = () => {
+    if (partito) return;
+    partito = true;
+    if (state.view !== "home" || hero.getBoundingClientRect().bottom < 120) { furgone.remove(); return; }
+    misura();
+    furgone.classList.add("in-viaggio");
+    furgone.addEventListener("animationend", event => { if (event.target === furgone) furgone.remove(); });
+  };
+  const quandoVisibile = () => {
+    if (!document.hidden) { setTimeout(parti, 700); return; }
+    document.addEventListener("visibilitychange", function attendi() {
+      if (document.hidden) return;
+      document.removeEventListener("visibilitychange", attendi);
+      setTimeout(parti, 700);
+    });
+  };
+  const foto = $("picture img", hero) || $("img", hero);
+  if (foto && !foto.complete) {
+    foto.addEventListener("load", quandoVisibile, { once: true });
+    foto.addEventListener("error", quandoVisibile, { once: true });
+  } else {
+    quandoVisibile();
+  }
+}
+
 function setupCampo3D() {
   const hero = $(".hero");
   if (!hero || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -2204,6 +2312,7 @@ function init() {
   setupInclinazione3D();
   setupGalleria3D();
   setupCampo3D();
+  setupFurgone();
   updateSummary();
   renderDashboard();
   if (!importOrderFromHash()) openInitialRoute();
