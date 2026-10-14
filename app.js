@@ -14,7 +14,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 36;
+const VERSIONE_SITO = 37;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -2395,19 +2395,12 @@ function setupFurgone() {
       w = Math.max(130, Math.min(210, larghezza * 0.52, (sotto - sopra) * 330 / 175));
       const h = w * 175 / 330;
       top = sopra + Math.max(0, (sotto - sopra - h) / 2);
-      if (sotto - sopra < h) {
-        // telefono piccolo: niente spazio tra KM 0 e i testi. Passa in alto nel cielo e si ferma
-        // a sinistra, dove non c'e' il riquadro KM 0
-        w = Math.min(150, Math.max(110, riquadro.offsetLeft - 24));
-        top = 10;
-        furgone.dataset.sostaSinistra = "1";
-      }
     } else {
       // computer: nella meta' con la foto, sopra il riquadro KM 0
       w = Math.min(330, Math.max(250, larghezza * 0.22));
       top = riquadro.offsetTop - w * 175 / 330 - 16;
     }
-    const sosta = furgone.dataset.sostaSinistra ? 12 : larghezza <= 980 ? (larghezza - w) / 2 : Math.max(24, larghezza * 0.24 - w / 2);
+    const sosta = larghezza <= 980 ? (larghezza - w) / 2 : Math.max(24, larghezza * 0.24 - w / 2);
     furgone.style.setProperty("--furgone-w", `${Math.round(w)}px`);
     furgone.style.setProperty("--fuori-sx", `${Math.round(-w * 1.5)}px`);
     furgone.style.setProperty("--sosta", `${Math.round(sosta)}px`);
