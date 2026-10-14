@@ -1,6 +1,8 @@
 const SHEET_1 = "assets/catalogo-vettoriali-1.webp";
 const SHEET_2 = "assets/catalogo-vettoriali-2.webp";
 const SHEET_EXTRA = "assets/catalogo-vettoriali-extra.webp";
+// foto nuove fatte con Gemini nello stesso stile (ottobre 2026): ravanelli, radicchi, zucca butternut
+const SHEET_NUOVE = "assets/catalogo-vettoriali-nuove.webp";
 const WHATSAPP_NUMBER = "393202732892";
 const ADMIN_PIN = "2892";
 const ADMIN_SESSION_KEY = "sole-terra-acqua-admin-unlocked";
@@ -14,7 +16,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 37;
+const VERSIONE_SITO = 38;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -159,6 +161,8 @@ const PRODUCTS = [
   { id: "lattuga-gentilina", name: "Lattuga gentilina", weight: "1 cespo", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 0, y: 1, enabled: true },
   { id: "lattuga-iceberg", name: "Lattuga iceberg", weight: "1 cespo", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 1, y: 1, enabled: true },
   { id: "cicoria", name: "Cicoria", weight: "500 g", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 2, y: 1, enabled: true },
+  { id: "radicchio-treviso", name: "Radicchio di Treviso", weight: "500 g", emoji: "🥬", sheet: SHEET_NUOVE, cols: 4, rows: 1, x: 1, y: 0, enabled: true },
+  { id: "radicchio-chioggia", name: "Radicchio di Chioggia", weight: "1 cespo", emoji: "🥬", sheet: SHEET_NUOVE, cols: 4, rows: 1, x: 2, y: 0, enabled: true },
   { id: "bieta-colorata", name: "Bieta colorata", weight: "500 g", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 3, y: 1, enabled: true },
   { id: "bieta-verde", name: "Bieta verde", weight: "500 g", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 4, y: 1, enabled: true },
   { id: "cocomero", name: "Cocomero", weight: "1 pz", emoji: "🍉", sheet: SHEET_1, cols: 5, rows: 4, x: 0, y: 2, enabled: true },
@@ -171,9 +175,10 @@ const PRODUCTS = [
   { id: "verza", name: "Verza", weight: "1 pz", emoji: "🥬", sheet: SHEET_1, cols: 5, rows: 4, x: 2, y: 3, enabled: true },
   { id: "cipolle-tropea", name: "Cipolle di Tropea", weight: "500 g", emoji: "🧅", sheet: SHEET_1, cols: 5, rows: 4, x: 3, y: 3, enabled: true },
   { id: "cipolle-bianche", name: "Cipolle bianche", weight: "500 g", emoji: "🧅", sheet: SHEET_1, cols: 5, rows: 4, x: 4, y: 3, enabled: true },
+  { id: "ravanelli", name: "Ravanelli", weight: "1 mazzo", emoji: "🌱", sheet: SHEET_NUOVE, cols: 4, rows: 1, x: 0, y: 0, enabled: true },
   { id: "aglio", name: "Mazzo di aglio", weight: "1 mazzo", emoji: "🧄", sheet: SHEET_2, cols: 5, rows: 3, x: 0, y: 0, enabled: true },
   { id: "odori-misti", name: "Odori misti", weight: "1 mazzo", emoji: "🌿", sheet: SHEET_2, cols: 5, rows: 3, x: 1, y: 0, enabled: true },
-  { id: "zucca", name: "Zucca", weight: "1 kg", emoji: "🎃", sheet: SHEET_2, cols: 5, rows: 3, x: 2, y: 0, enabled: true },
+  { id: "zucca", name: "Zucca butternut", weight: "1 kg", emoji: "🎃", sheet: SHEET_NUOVE, cols: 4, rows: 1, x: 3, y: 0, enabled: true },
   { id: "carciofi", name: "Carciofi", weight: "3 pz", emoji: "🌿", sheet: SHEET_2, cols: 5, rows: 3, x: 3, y: 0, enabled: true },
   { id: "asparagi", name: "Asparagi", weight: "1 mazzo", emoji: "🌿", sheet: SHEET_2, cols: 5, rows: 3, x: 4, y: 0, enabled: true },
   { id: "patate", name: "Patate", weight: "1 kg", emoji: "🥔", sheet: SHEET_2, cols: 5, rows: 3, x: 0, y: 1, enabled: true },

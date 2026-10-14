@@ -160,7 +160,7 @@
     },
     {
       "id": "zucca",
-      "nome": "Zucca",
+      "nome": "Zucca butternut",
       "peso": "1 kg",
       "disponibile": true,
       "foto": ""
@@ -240,6 +240,27 @@
       "nome": "Peperoni friggitelli",
       "peso": "500 g",
       "disponibile": false,
+      "foto": ""
+    },
+    {
+      "id": "radicchio-treviso",
+      "nome": "Radicchio di Treviso",
+      "peso": "500 g",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "radicchio-chioggia",
+      "nome": "Radicchio di Chioggia",
+      "peso": "1 cespo",
+      "disponibile": true,
+      "foto": ""
+    },
+    {
+      "id": "ravanelli",
+      "nome": "Ravanelli",
+      "peso": "1 mazzo",
+      "disponibile": true,
       "foto": ""
     }
   ],
