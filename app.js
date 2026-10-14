@@ -14,7 +14,7 @@ const PRESERVES_STORAGE_KEY = "sole-terra-acqua-conserve";
 // e' l'unico posto che vedono tutti i clienti. La dashboard lo riscrive su GitHub.
 // deve essere uguale al numero di CACHE_NAME in sw.js e al ?v= di app.js/styles.css in index.html:
 // si alzano tutti insieme a ogni pubblicazione
-const VERSIONE_SITO = 34;
+const VERSIONE_SITO = 35;
 const SITO_REPO = "soleterraacqua/soleterraacqua.github.io";
 const SETTIMANA_FILE = "settimana.json";
 const SETTIMANA_COPIA_KEY = "sole-terra-acqua-settimana";
@@ -1222,7 +1222,7 @@ function buildWhatsAppUrl(orderInput, discoverySource) {
     notes ? `📝 ${notes}` : "",
     "",
     `💶 *Totale ${money(order?.total || total())}* (${area === "Viterbo" ? "consegna gratuita" : `consegna ${money(2.5)} inclusa`})`,
-    `Mi ha conosciuto: ${discoverySource}`,
+    ...(discoverySource ? [`Mi ha conosciuto: ${discoverySource}`] : []),
     importUrl ? `\nRegistra l'ordine: ${importUrl}` : ""
   ].filter((riga, indice, righe) => riga !== "" || (righe[indice - 1] && righe[indice - 1] !== "")).join("\n").trim();
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -1264,22 +1264,19 @@ function chiudiPopupConserve() {
 }
 
 function confirmOrder() {
-  const discovery = $('input[name="discovery"]:checked');
+  // "come mi hai conosciuto" e' facoltativa: se non risponde, va bene lo stesso
+  const origine = $('input[name="discovery"]:checked')?.value || "";
   const privacy = $("#privacyCheck").checked;
-  $("#discoveryError").textContent = discovery ? "" : "Tocca una delle quattro risposte qui sopra.";
-  $(".discovery-fieldset").classList.toggle("da-completare", !discovery);
   $(".privacy-check").classList.toggle("da-completare", !privacy);
-  if (!discovery || !privacy) {
-    // prima l'avviso compariva solo vicino alla domanda, spesso fuori dallo schermo: sembrava che
-    // "conferma ordine" non funzionasse. Ora porto il cliente li' e lo evidenzio.
-    const primo = !discovery ? $(".discovery-fieldset") : $(".privacy-check");
-    primo.scrollIntoView({ behavior: "smooth", block: "center" });
-    primo.classList.remove("richiamo");
-    void primo.offsetWidth;
-    primo.classList.add("richiamo");
-    showToast(!discovery
-      ? "Manca una risposta: dimmi come mi hai conosciuto."
-      : "Manca la crocetta sulla privacy: toccala e poi conferma.", 4500);
+  if (!privacy) {
+    // prima l'avviso compariva lontano dal punto giusto e sembrava che "conferma ordine" non
+    // funzionasse: ora porto il cliente alla crocetta e la evidenzio
+    const riquadro = $(".privacy-check");
+    riquadro.scrollIntoView({ behavior: "smooth", block: "center" });
+    riquadro.classList.remove("richiamo");
+    void riquadro.offsetWidth;
+    riquadro.classList.add("richiamo");
+    showToast("Manca la crocetta sulla privacy: toccala e poi conferma.", 4500);
     return;
   }
   // tutto a posto: via l'eventuale avviso rimasto, non deve coprire il popup o la conferma
@@ -1307,7 +1304,7 @@ function confirmOrder() {
     address: state.orderData.address,
     box: boxData().label[0] + boxData().label.slice(1).toLowerCase(),
     total: total(),
-    source: discovery.value,
+    source: origine,
     status: "Confermato"
   };
   order.time = state.selectedTime.slice(0, 5);
@@ -1321,7 +1318,7 @@ function confirmOrder() {
   state.orders.unshift(order);
   try { localStorage.setItem("radici-demo-order", JSON.stringify(order)); } catch (_) {}
   saveBusinessData();
-  const whatsappUrl = buildWhatsAppUrl(order, discovery.value);
+  const whatsappUrl = buildWhatsAppUrl(order, origine);
   window.open(whatsappUrl, "_blank", "noopener");
 
   $$(".order-step").forEach(el => el.classList.remove("active"));
@@ -2182,10 +2179,18 @@ function setupEvents() {
     renderDashboard(button.dataset.orderFilter);
   }));
   $$("input, select, textarea", $("#deliveryForm")).forEach(field => field.addEventListener("input", () => field.classList.remove("invalid")));
-  $$('input[name="discovery"]').forEach(input => input.addEventListener("change", () => {
-    $("#discoveryError").textContent = "";
-    $(".discovery-fieldset").classList.remove("da-completare");
-  }));
+  // "come mi hai conosciuto": toccando di nuovo la risposta scelta la si toglie (e' facoltativa)
+  $$('input[name="discovery"]').forEach(input => {
+    const etichetta = input.closest("label");
+    etichetta.addEventListener("pointerdown", () => { input.dataset.eraScelta = input.checked ? "1" : ""; });
+    etichetta.addEventListener("click", event => {
+      if (input.dataset.eraScelta === "1") {
+        event.preventDefault();
+        input.checked = false;
+        input.dataset.eraScelta = "";
+      }
+    });
+  });
   $("#privacyCheck").addEventListener("change", event => {
     if (event.target.checked) $(".privacy-check").classList.remove("da-completare");
   });
